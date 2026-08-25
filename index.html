@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)file:///C:/Users/ghorr/Downloads/kanon-archivum.html -->
+<html lang="hu"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#04050a">
+<title>KÁNON // ARCHÍVUM — A Holtidő Könyvtára</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#04050a;color:#e9e2d0;
+ -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+ font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+canvas{display:block;position:fixed;inset:0;touch-action:none}
+.overlay,#card{touch-action:pan-y}
+.serif{font-family:Georgia,"Times New Roman",serif}
+.hidden{display:none!important}
+button{cursor:pointer;font:inherit;color:inherit}
+.pill{border:1px solid rgba(233,226,208,.22);background:rgba(8,10,18,.55);backdrop-filter:blur(8px);
+ color:#e9e2d0;border-radius:999px;padding:8px 13px;font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.pill:active{background:rgba(230,200,126,.18)}
+#hud{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:8px;
+ padding:calc(8px + env(safe-area-inset-top)) 12px 8px;z-index:20;pointer-events:none}
+#hud .pill{pointer-events:auto}
+#brand{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#cfc4a6;opacity:.9}
+#prog{font-size:10px;letter-spacing:.2em;color:#bfae86}
+#label{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));
+ display:flex;flex-direction:column;align-items:center;gap:9px;z-index:15;pointer-events:none}
+#labelName{font-family:Georgia,serif;font-size:21px;color:#f2e9d2;text-shadow:0 2px 20px rgba(0,0,0,.9)}
+#labelSub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#bfae86}
+#label .pill{pointer-events:auto;border-color:rgba(230,200,126,.45);background:rgba(230,200,126,.1)}
+#card{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:25;
+ background:rgba(7,9,16,.87);border:1px solid rgba(233,226,208,.13);border-radius:18px;
+ padding:16px 16px 14px;max-height:54dvh;overflow-y:auto;backdrop-filter:blur(12px);
+ box-shadow:0 12px 44px rgba(0,0,0,.55)}
+#card .kicker{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#bfae86;margin-bottom:7px}
+#card .txt{font-family:Georgia,serif;font-size:16px;line-height:1.62;color:#efe7d3;white-space:pre-line}
+.btn{display:block;width:100%;text-align:left;margin-top:10px;padding:13px 14px;border-radius:14px;
+ border:1px solid rgba(230,200,126,.32);background:rgba(230,200,126,.06);color:#f4ead2;
+ font-family:Georgia,serif;font-size:15px;line-height:1.45}
+.btn:active{background:rgba(230,200,126,.17)}
+.btn.center{text-align:center;font-family:inherit;letter-spacing:.18em;text-transform:uppercase;font-size:11px;color:#e6c87e}
+#toast{position:fixed;top:calc(56px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+ z-index:40;width:min(92vw,520px);background:rgba(10,12,20,.93);border:1px solid rgba(230,200,126,.38);
+ border-radius:14px;padding:12px 15px;font-family:Georgia,serif;font-size:14px;line-height:1.55;
+ color:#f2e9d2;opacity:0;transition:opacity .35s;pointer-events:none}
+#fade{position:fixed;inset:0;background:#04050a;z-index:60;opacity:1;transition:opacity .65s;pointer-events:none}
+.overlay{position:fixed;inset:0;z-index:50;overflow-y:auto;background:rgba(4,5,10,.93);
+ backdrop-filter:blur(11px);padding:calc(18px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom))}
+#title{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+#title .eyebrow{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:#bfae86}
+#title h1{font-family:Georgia,serif;font-weight:400;font-size:34px;letter-spacing:.05em;margin:10px 0 2px;color:#f2e9d2}
+#title h1 em{font-style:normal;color:#e6c87e}
+#title .sub{font-family:Georgia,serif;font-size:15px;line-height:1.65;color:#d8cfb8;max-width:34em;margin:14px 0 4px}
+#title .btn{max-width:320px}
+.ovHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.ovHead h2{font-family:Georgia,serif;font-weight:400;font-size:22px;margin:0;color:#f2e9d2}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px;position:sticky;top:0;background:rgba(4,5,10,.95);padding:6px 0;z-index:2}
+.tab{border:1px solid rgba(233,226,208,.2);background:transparent;border-radius:999px;padding:7px 11px;
+ font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#cfc4a6}
+.tab.on{border-color:#e6c87e;color:#e6c87e;background:rgba(230,200,126,.08)}
+.entry{border-top:1px solid rgba(233,226,208,.1);padding:14px 0}
+.entry h3{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 5px;color:#f2e9d2}
+.entry .meta{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#bfae86;margin-bottom:6px}
+.entry p{font-family:Georgia,serif;font-size:14px;line-height:1.62;color:#ded6c2;margin:6px 0}
+.entry p b{color:#e6c87e;font-weight:400;letter-spacing:.04em}
+.frag{font-family:Georgia,serif;font-size:13.5px;line-height:1.55;color:#c9bfa4;margin:5px 0;padding-left:12px;border-left:2px solid rgba(230,200,126,.4)}
+.lock{font-family:Georgia,serif;font-style:italic;color:#7d7663;font-size:14px}
+.bar{height:6px;border-radius:3px;background:rgba(233,226,208,.12);position:relative;margin:8px 0 4px}
+.bar i{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;background:#e6c87e;transform:translateX(-50%);box-shadow:0 0 10px rgba(230,200,126,.7)}
+.axl{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#a89c7d;margin-bottom:12px}
+.mrow{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.1em;color:#d8cfb8;padding:5px 0;border-bottom:1px dashed rgba(233,226,208,.12)}
+</style>
+</head>
+<body><canvas width="2560" height="1279" style="display: block; width: 2560px; height: 1279px;"></canvas>
+<div id="hud" class="hidden">
+ <span id="brand">Kánon // Archívum</span>
+ <span id="prog">0/11</span>
+ <span style="display:flex;gap:6px">
+  <button class="pill" id="btnCodex">Kódex</button>
+  <button class="pill" id="btnAudio">Hang · ki</button>
+ </span>
+</div>
+<div id="label" class="hidden">
+ <div id="labelName"></div><div id="labelSub"></div>
+ <button class="pill" id="btnEnter">Belépés</button>
+</div>
+<div id="card" class="hidden">
+ <div class="kicker" id="cardKick"></div>
+ <div class="txt" id="cardTxt"></div>
+ <div id="cardBtns"></div>
+</div>
+<div id="toast"></div>
+<div id="title" class="overlay">
+ <div id="titleInner"><div class="eyebrow">Időutazó önismereti kaland</div><h1>KÁNON <em>//</em> ARCHÍVUM</h1><div class="eyebrow" style="margin-top:2px">A Holtidő Könyvtára</div><p class="sub">A pillanatok közti résben állsz, ahol minden eldöntetlen még egyszer eldönthető. Tizenegy kapu — tizenegy pillanat, amikor egy közösség kiválasztotta, mit őriz meg a tudásból, és mit felejt el. Belépsz, tanúskodsz, döntesz. A Könyvtár közben rólad készít jegyzetet: a végén a Tükör megmutatja, hogyan válogatsz te.</p><button class="btn center" id="btnStart" style="max-width:320px">Belépek</button></div>
+</div>
+<div id="codex" class="overlay hidden">
+ <div class="ovHead"><h2>Kutatói Kódex</h2><button class="pill" id="btnCodexClose">Bezár</button></div>
+ <div class="tabs" id="codexTabs"></div>
+ <div id="codexBody"></div>
+</div>
+<div id="mirrorUI" class="overlay hidden">
+ <div class="ovHead"><h2>A Tükör</h2><button class="pill" id="btnMirrorClose">Vissza</button></div>
+ <div id="mirrorBody"></div>
+</div>
+<div id="fade" style="opacity: 0;"></div>
+<script src="./assets/three.min.js"></script>
+<script id="game">
+'use strict';
+/* ============================================================
+   KÁNON // ARCHÍVUM — A Holtidő Könyvtára
+   Időutazó önismereti kalandjáték a kánonképződésről.
+   Egyetlen fájl · Three.js r128 · mobil-első · állapot a memóriában
+   ============================================================ */
+
+const PROLOG = {
+ k:`Mielőtt belépnél, a Könyvtár egyetlen kérdést tesz fel.\n\nMi a tudás?`,
+ o:[
+  {c:`Amit a közösségem rám hagyott — a lánc, amelybe beleszülettem.`, g:-1, t:`az út elején a hagyomány láncát választottad`},
+  {c:`Amit magam tapasztalok — a hang, amelyet senki sem közvetíthet.`, g:1, t:`az út elején a közvetlen tapasztalást választottad`},
+  {c:`Ami a kettő vitájában születik.`, g:0, t:`az út elején a vitát magát választottad`}
+ ]
+};
+
+/* Tengelyek: g = közvetlen(+)/közvetített(−) · z = lezárás(+)/nyitva-hagyás(−) · p = központ(+)/perem(−)
+   Mechanizmusok: dontes · elhanyagolas · pusztitas · archivum */
+
+const ALLOMASOK = [
+{
+ id:'javne', cim:'A vita háza', hely:'Javne', ido:'i. sz. ~90', arch:'udvar', hang:110,
+ pal:{sky:0x171209, fog:0x2a2115, ground:0x4a3b26, fal:0x6b5a42, akc:0xe0b060},
+ belepok:[
+  `Húsz éve rom a Templom. Nem zsinat ez — csak egy udvar, ahol nemzedékek óta ugyanaz a vita folyik: mely tekercsek „teszik tisztátalanná a kezet”, vagyis melyek szentek.`,
+  `Egy írnok súgva mondja: a görög nyelvű könyveket — Ben Szírát, a Makkabeusokat — sokan szeretik, de a héber és az arámi szó erősebbnek bizonyul. Messze délen, Etiópiában Enók könyve mindeközben szent marad — mindmáig.`
+ ],
+ szilankok:[
+  `Josephus huszonkét könyvről ír, és úgy tartja: Artaxerxész kora után megszakadt a próféták pontos láncolata — a lezárt lista eszméje már nála készen áll.`,
+  `A „jamniai zsinat” Heinrich Graetz 19. századi hipotézise. A mai kutatás — Lewis, McDonald, Leiman — nagyrészt elvetette: döntő ülés soha nem volt.`,
+  `Qumrán barlangjaiból Eszter kivételével minden bibliai könyv előkerült. A rangsor már a Templom pusztulása előtt formálódott — kétszáznál több bibliai kézirat tanúsítja.`
+ ],
+ dontes:{
+  k:`Egy öreg tanító feléd fordul: „Idegen vagy, kívülről látsz. Mondd hát — lezárjuk-e a listát?”`,
+  o:[
+   {c:`„Zárjátok le most. A szétszórt népnek határ kell, nem vita.”`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`A határ vonzó. De a történelem mást tett: a lista a 2. század végéig nyitva maradt, és sosem egyetlen ülés zárta le — a lezárás maga is elhúzódó vita volt.`},
+   {c:`„Hadd vitázzon minden nemzedék. A kánon nem tárgy — folyamat.”`, tag:{g:0,z:-1,p:0,mech:'archivum'},
+    kov:`Nagyjából így történt. A Misna rögzíti a vitát az Énekek énekéről és a Prédikátorról — a szentség kérdése generációkon át eleven maradt, döntőbíró nélkül.`},
+   {c:`„Vegyétek be a görög könyveket is — a tudás nem nyelvhez kötött.”`, tag:{g:0,z:-1,p:-1,mech:'dontes'},
+    kov:`A közösség a héber–arámi szó mellett döntött; a görög gyűjtemény a keresztényeké lett. A kirekesztésben a versengés is ott munkált — nemcsak a teológia.`}
+  ]},
+ kodex:`KÁNON: a 24 könyves héber Biblia (Tóra, Neviim, Ketuvim). KIMARADT: az apokrifok (Ben Szíra, Tóbit, Makkabeusok), a pszeudepigráfok (Jubileumok), az enókiánus irodalom, a qumráni szektairatok — 1 Enók az etióp egyházban máig kánoni. KI DÖNTÖTT: senki egyedül — fokozatos rabbinikus konszenzus a Templom pusztulása (70) után; a „jamniai zsinat” diszkreditált hipotézis. OKOK: héber–arámi nyelv előnyben; az apokaliptikus-szektás tartalom gyanúja; identitás-újraépítés; versengés a keresztény szöveghasználattal (a Septuaginta elhagyása). VITA MA: mikor záródott le — a 2. század vége előtt biztosan nem.`
+},
+{
+ id:'alex', cim:'A 39. levél', hely:'Alexandria', ido:'i. sz. 367', arch:'bazilika', hang:130.8,
+ pal:{sky:0x0d1420, fog:0x182233, ground:0x2c3a4d, fal:0x5a6d84, akc:0xd9c48a},
+ belepok:[
+  `Athanasziosz püspök a húsvéti körlevelét diktálja. Először sorolja fel pontosan azt a huszonhét könyvet, amelyet ma Újszövetségnek hívnak — és először nevez meg „kanonizált” listát.`,
+  `Az asztalon egy kopott kötet: Hermász Pásztora. A püspök maga ajánlja olvasásra a hitújoncoknak — és mégis kizárja a kánonból. Két polc születik ebben a szobában: a szent és a csupán hasznos.`
+ ],
+ szilankok:[
+  `Százhúsz évvel korábban Markión alkotta az első ismert kánont: csupán Lukács és tíz páli levél. A nagyegyház listái részben válaszok erre a csonkításra.`,
+  `A Muratori-töredék huszonkét könyvet ismer — Jakab, Péter két levele és a Zsidókhoz írt levél hiányzik belőle. A határ sokáig mozgott.`,
+  `Metzger három rostát nevez meg: ortodoxia, apostoliság, egyházi konszenzus — más kutatók szerint az atyák akár tizenegy szempontot is használtak. A hippói és karthágói zsinatok már csak ratifikáltak.`
+ ],
+ dontes:{
+  k:`A püspök leteszi a nádtollat, és rád néz: „Vándor — mi legyen a Pásztorral?”`,
+  o:[
+   {c:`„Huszonhét könyv. Se több, se kevesebb — a nyáj ne tévelyegjen.”`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`A levél így született. És valószínűleg épp e sorok elől rejtettek el messze délen, a sivatagban tizenhárom kódexet egy korsóban — a lista árnyékot vet.`},
+   {c:`„Legyen második polc: hasznos, de nem kánoni. A kizárás ne legyen felejtés.”`, tag:{g:0,z:0,p:0,mech:'archivum'},
+    kov:`Ez a köztes polc valóban létrejött — az „olvasásra ajánlott” iratok kategóriája. A Pásztor így maradt fenn: kirekesztve, de nem elveszve.`},
+   {c:`„A Lélek nem lista. Aki határt húz, a forrást rekeszti el.”`, tag:{g:1,z:-1,p:-1,mech:'elhanyagolas'},
+    kov:`Ez a hang a peremre szorult. A kutatás — a Bauer-tézis óta — mégis úgy látja: némely vidéken az „eretnekség” korábban volt otthon, mint az „ortodoxia”. Az egység utólagos.`}
+  ]},
+ kodex:`KÁNON: a 27 könyves Újszövetség — először pontosan Athanasziosz 39. húsvéti levelében (367). KIMARADT: gnosztikus és apokrif evangéliumok, cselekedetek (Tamás, Fülöp, Mária, Júdás evangéliuma); sokáig vitatott „hasznos” iratok (Hermász Pásztora, Barnabás, Didakhé, 1 Kelemen). KI DÖNTÖTT: évszázados többszereplős folyamat — Markión ellenkánonja (~140), Muratori-töredék (~170–180), Irenaeus négyes evangéliuma, majd Hippó (393) és Karthágó (397) regionális ratifikációja. OKOK: apostoliság, ortodoxia (regula fidei), egyházi konszenzus (Metzger 3 kritériuma; mások szerint akár 11); a püspöki szervezet egysége; a „heretikus” listák kényszere. VITA MA: Bauer-tézis — némely régióban a „heresy” megelőzte az „orthodoxy”-t; a 27-es lista egyes kutatók szerint „4. századi találmány”.`
+},
+{
+ id:'nagh', cim:'A korsó', hely:'Nag Hammadi', ido:'i. sz. ~370', arch:'sivatag', hang:98,
+ pal:{sky:0x120a14, fog:0x241528, ground:0x4d3a2e, fal:0x6e5a4a, akc:0xc9a0e8},
+ belepok:[
+  `Éjszaka, sziklafal tövében. Szerzetesek tizenhárom bőrkötésű kódexet eresztenek egy agyagkorsóba: Tamás evangéliumát, János apokrifonját, az Igazság evangéliumát. Valószínűleg épp a 39. levél elől.`,
+  `Ezekben a lapokban a világot nem a legfőbb Isten teremti, hanem egy alárendelt, vak műves — és a szabadulás nem a hit, hanem a gnózis: az a megismerés, amelyben önmagunk legmélye és Isten egyetlen tudás.`
+ ],
+ szilankok:[
+  `Irenaeus öt kötetet írt a „hamisan úgynevezett tudás” cáfolatára (~180). Ezerhatszáz éven át szinte mindent, amit a kirekesztettekről tudtunk, az ellenségeiktől tudtuk.`,
+  `Pagels szerint e szövegekben az önismeret legmélyebb szintje egyben istenismeret — és a vitájuk a nagyegyházzal valójában arról szólt: kell-e közvetítő ember Isten és ember közé.`,
+  `King figyelmeztet: maga a „gnoszticizmus” szó is kései tudós konstrukció — kérdés, volt-e egyáltalán ilyen nevű, egységes mozgalom.`
+ ],
+ dontes:{
+  k:`A legfiatalabb szerzetes a kezedbe nyomja az utolsó kódexet: „Te döntesz, vándor. Mi legyen vele?”`,
+  o:[
+   {c:`Eltemetem a korsóban. Az archívum túléli a kánont.`, tag:{g:1,z:-1,p:-1,mech:'archivum'},
+    kov:`1945 decemberében egy földműves rátalált a korsóra. Az elhallgattatott hang tizenhat évszázad múlva szólalt meg újra — mert valaki nem égette el, csak félretette.`},
+   {c:`Elégetem. A levél szava a pásztor szava.`, tag:{g:-1,z:1,p:1,mech:'pusztitas'},
+    kov:`Majdnem minden más példány így veszett el. Ami ma a gnózisról tudható, az egyetlen korsó véletlen túlélésén múlik — a hamu nem vitatkozik.`},
+   {c:`Titokban tovább másolom, kézről kézre.`, tag:{g:1,z:-1,p:-1,mech:'dontes'},
+    kov:`A titkos másolatok nem maradtak fenn. A túlélés nem az elszántságon múlt, hanem a véletlenen — ezt hívja a kutatás survivorship biasnak: a minta maga torz.`}
+  ]},
+ kodex:`KÁNON (saját közösségeikben): zárt lista nem volt — a Nag Hammadi-korpusz (1945: 13 kódex, 52 traktátus) szethiánus és valentiniánus iratokat őriz. KIMARADT (a nagyegyház által): az egész korpusz — János apokrifonja, az Igazság evangéliuma, Tamás evangéliuma, Pistis Sophia. KI DÖNTÖTT: a heresziológiai hadjárat — Irenaeus (~180), majd a 4. századi ortodox konszolidáció; a korsó elrejtése valószínűleg Athanasziosz 367-es levelére válasz. OKOK: dualista kozmológia és demiurgosz-tan; gnosis a pistis helyett; a testi feltámadás tagadása; a papi közvetítés és az intézményi tekintély elutasítása — Pagels szerint a teológiai vita mélyén a klerikális hatalom kérdése állt. VITA MA: King — a „gnoszticizmus” kategória kései konstrukció; mennyire volt ez egyáltalán egységes mozgalom?`
+},
+{
+ id:'varanasi', cim:'A hang, amelyet senki sem írt', hely:'Váránaszí', ido:'i. sz. ~750', arch:'lotusz', hang:146.8,
+ pal:{sky:0x1a0f08, fog:0x33200f, ground:0x5a4020, fal:0x8a6a35, akc:0xffb347},
+ belepok:[
+  `A Gangesz fölött hajnal. A tanító magyarázza: a Véda nem könyv — hang. Apauruṣeya: szerző nélküli, örök. Ez a śruti, „ami hallatott”. Alatta áll minden, „amire emlékeznek”: a smṛti.`,
+  `A Mīmāṃsā iskola szabálya kérlelhetetlen: ha a kettő ütközik, a śruti győz. A smṛti tekintélye kölcsönzött — egy feltételezett, elveszett védikus szövegen nyugszik. A küszöbön egy vāmācāra jógī vár: az ő kinyilatkoztatása Śivától jön, nem a Védából.`
+ ],
+ szilankok:[
+  `Itt nincs zárt lista és nincs központi döntéshozó. A rangsort egy filozófiai iskola és a papi gyakorlat tartja fenn — a „kánon” szó csak óvatosan alkalmazható.`,
+  `A jógī útja transzgresszív: az „öt M” szándékosan hágja át a tisztasági kódokat. Épp ezért gyanús — és épp ezért erős.`,
+  `Sanderson és Flood kimutatta: a Tantra a látszólagos perem ellenére beszivárgott a főáramba — gyakran „megtisztítva”: a rítus szerkezete maradt, a tisztátalan elem kikerült. A marginalizáció nem kirekesztés.`
+ ],
+ dontes:{
+  k:`A tanító rád bízza a szót: „Vendég vagy, elfogulatlan. Mi legyen a jógīval és a könyveivel?”`,
+  o:[
+   {c:`„Alárendelve megtűrni. A hierarchia nem kizárás — rend.”`, tag:{g:-1,z:0,p:1,mech:'elhanyagolas'},
+    kov:`Nagyjából ez történt. A tantrikus hagyomány a rangsor alján, de a gyakorlat közepén élt tovább — a perem itt nem száműzetés, hanem cím nélküli jelenlét.`},
+   {c:`„Megtisztítva befogadni: a szerkezet maradjon, az öt M kerüljön ki.”`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`Ezt a mintát dokumentálja Sanderson: a domesztikáció. A rítus túlél — de már nem az, ami volt. A befogadás ára az él, amelyet lecsiszoltak.`},
+   {c:`„Az ő gnózisa egyenrangú. A kinyilatkoztatásnak nincs egyetlen szája.”`, tag:{g:1,z:-1,p:-1,mech:'archivum'},
+    kov:`A brahmanikus rend ezt sosem mondta ki — de a gyakorlat félig mégis így tett: a Tantra a hindu főáram csendes rétegévé vált. A kimondatlan befogadás is szelekció.`}
+  ]},
+ kodex:`KÁNON: a śruti — a négy Véda a Brāhmaṇákkal, Āraṇyakákkal, Upaniṣadokkal; apauruṣeya (szerző nélküli, örök). ALÁRENDELT/KIMARADT: a smṛti (eposzok, Purāṇák, Dharmaśāstrák, Bhagavad-gītā) — levezetett tekintéllyel; a Tantrák és Āgamák avaidika (nem-védikus) kinyilatkoztatásként gyanúsak. KI DÖNTÖTT: senki — nincs zárt lista, nincs központi intézmény; a rangsort a Mīmāṃsā iskola logikája és a brahmanikus ortopraxis tartja fenn („ütközésnél a śruti győz”; a smṛti mögé elveszett śrutit feltételeznek, amely megdől, ha ellentmondás vagy világi motívum mutatható ki). OKOK: az emberfeletti eredet mint tekintélykritérium; a tisztasági kódok és a kaszthierarchia védelme a transzgresszív (vāmācāra, „öt M”) gyakorlatokkal szemben; a papi elit tekintélymonopóliuma. VITA MA: Sanderson, Flood — a Tantra valójában központi; a kirekesztés inkább retorikai-hierarchikus; a „purifikációs domesztikáció” visszatérő minta.`
+},
+{
+ id:'jiankang', cim:'A katalógus', hely:'Csienkang (Jiankang)', ido:'i. sz. ~515', arch:'pagoda', hang:164.8,
+ pal:{sky:0x0a1410, fog:0x14261e, ground:0x27402f, fal:0x4a6a52, akc:0x9fe8b8},
+ belepok:[
+  `Sengyou mester a Chu sanzang jiji-t írja — a legrégebbi fennmaradt kínai buddhista szövegkatalógust. Itt nem zsinat dönt: a rubrika. Fordítás. Névtelen. Kétséges. Hamis.`,
+  `Előtte egy szútra fekszik. Kínában született, szanszkrit eredetije nincs — mégis eleven: emberek gyógyulnak és ébrednek tőle. A kérdés nem az, igaz-e. A kérdés: melyik rovatba kerül.`
+ ],
+ szilankok:[
+  `Dao'an 374-es katalógusa — az első — elveszett. Ami a listákról lemaradt, sokszor a létből is lemaradt: a katalógus itt maga a kánonképző eszköz.`,
+  `A későbbi jegyzékek négyszáznál több címet soroltak az apokrif rovatba. A fő gyanújel konfuciánus örökség: nincs megnevezhető, datálható fordító.`,
+  `Buswell és Tokuno nyomán az „apokrif” ma nem szitokszó: e szövegek voltak a buddhizmus kínaivá válásának motorjai. A Guanding jing a „hamis” rovatból emelkedett kánonivá — a határ porózus.`
+ ],
+ dontes:{
+  k:`Sengyou ecsetje megáll a levegőben. „Vándor a nyugati kapun túlról — hová írjam?”`,
+  o:[
+   {c:`„Weijing — hamis. A kánon a származás tisztasága.”`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`Sok szöveg így tűnt el a másolók kezéből. De némelyik „hamis” később mégis kánonivá lett — a rubrika ítélete nem bizonyult véglegesnek, csak lassúnak.`},
+   {c:`„Yijing — kétséges. A bizonytalanság is tudás: jegyezd fel.”`, tag:{g:0,z:-1,p:0,mech:'archivum'},
+    kov:`A „kétséges” rovat sok szöveget tartott életben, míg a megítélés megfordult. A jó katalógus nem ítélet — türelem.`},
+   {c:`„Ha ébreszt, Buddha szava. A buddhavacana nem földrajz.”`, tag:{g:1,z:-1,p:-1,mech:'dontes'},
+    kov:`Kelet-Ázsia gyakorlata idővel félig igazat adott: a sinizált szútrák a kínai buddhizmus gerincévé váltak — a kánon utolérte az életet.`}
+  ]},
+ kodex:`KÁNON: a kínai Dazangjing (modern kiadása a Taishō: 55 kötet, 2184 szöveg, 45 kötet kiegészítés) és a páli Tipiṭaka, a tibeti Kangyur/Tengyur — hagyományáganként más-más kánon. KIMARADT: a kínai „apokrif” szútrák — yijing (kétséges) és weijing (hamis) rovat; a korai iskolák felől nézve sokáig a Mahāyāna-szútrák státusza is vitatott. KI DÖNTÖTT: a zsinatok (Rādzsagriha: Ānanda a szuttákat, Upāli a Vinayát recitálja; Vaiśālī után iskolaszakadás) — Kínában pedig a szövegkatalógusok: Dao'an elveszett jegyzéke (374), majd Sengyou Chu sanzang jiji-je (~515). OKOK: a buddhavacana hitelessége; a szanszkrit eredeti és a datálható fordító hiánya (konfuciánus norma); a szútrák politikai felhasználhatósága. VITA MA: Buswell, Tokuno — az apokrif a sinizáció motorja; a Guanding jing útja „eretnekségből ortodoxiába”; a kánonhatár porózus és időben mozgó.`
+},
+{
+ id:'nippur', cim:'Az agyag emlékezete', hely:'Nippur', ido:'i. e. ~1740', arch:'ziggurat', hang:87.3,
+ pal:{sky:0x140f08, fog:0x2b2210, ground:0x59431f, fal:0x8a6c38, akc:0xf0c060},
+ belepok:[
+  `Az edubba, a táblák háza. Itt nincs zsinat, nincs püspök, nincs kalifa. A kánon az, amit a fiúk másolnak — nemzedékről nemzedékre, míg a kezük meg nem tanulja, amit a fejük.`,
+  `A tananyag magja tíz szöveg: a Decad. Ami bekerül, azt ezer kéz másolja tovább. Ami kimarad, azt nem tiltja senki — egyszerűen nem írja többé senki. A felejtés itt hangtalan.`
+ ],
+ szilankok:[
+  `Oppenheim óta ezt „stream of tradition”-nek hívják: a hagyomány sodrának. A kiválasztás nem döntés — pedagógia.`,
+  `George megfigyelése: némely korai akkád műből alig maradt iskolai másolat — mert nem volt tananyag. A curriculumból kimaradni annyi, mint a jövőből kimaradni.`,
+  `A ScriPTS-kutatás a lexikai listák helyi változatosságát mutatta ki: a standardizáció nem volt egységes. Stabil szöveg — stabil kultusz: a kettő egymást tartotta.`
+ ],
+ dontes:{
+  k:`A főírnok két táblát tesz eléd: egy királyhimnuszt és egy panaszéneket, amely az isteneket kérdezi. „Egy hely maradt a tananyagban. Melyiket adjam a fiúknak?”`,
+  o:[
+   {c:`A királyhimnuszt. A hatalom fizeti az iskolát — az iskola őrzi a hatalmat.`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`Így működött a sodor: a legitimáció irodalma bőven fennmaradt. A curriculum a hatalom leghosszabb karja — évezredekre nyúlik.`},
+   {c:`A panaszéneket. A kérdés is szent — talán szentebb, mint a dicséret.`, tag:{g:1,z:-1,p:-1,mech:'dontes'},
+    kov:`Néhány kérdező szöveg valóban bekerült a sodorba — és épp ezért ismerjük őket. Amit nem másoltak, arról még a hiányát sem tudjuk felmérni.`},
+   {c:`Mindkettőt, felváltva. A tananyag tágítható.`, tag:{g:0,z:-1,p:0,mech:'archivum'},
+    kov:`A táblahely és a tanítási idő véges volt. A nem-másolás nem ítélet — csendes elhanyagolás. A leghatékonyabb kirekesztésnek nincs jegyzőkönyve.`}
+  ]},
+ kodex:`KÁNON (de facto): a „stream of tradition” — az óbabiloni írnokiskola sumer irodalmi magja (pl. a tízszövegű Decad), a standardizált akkád Gilgames-eposz. KIMARADT: ami nem került a curriculumba vagy a könyvtári gyűjtésbe — nem másolódott, eltűnt (George: némely akkád műből alig van iskolai másolat). KI DÖNTÖTT: senki és mindenki — a templomi-palotai írnokiskolák (edubba) pedagógiai gyakorlata és a könyvtári gyűjtés (pl. Assurbanipal) mint de facto kanonizáció. OKOK: a kultuszstabilitást erősítő szövegek elsőbbsége; az írnokelit önreprodukciója; a királyi ideológia legitimációs irodalma. VITA MA: alkalmazható-e itt a „kánon” szó egyáltalán (Oppenheim: inkább hagyomány-sodor); a ScriPTS-projekt szerint a standardizáció lokálisan változó volt; a katalógusok curriculum-listák vagy leltárak?`
+},
+{
+ id:'ktesziphon', cim:'A feltalált ábécé', hely:'Ktesziphón', ido:'i. sz. ~350', arch:'tuzoltar', hang:123.5,
+ pal:{sky:0x160b06, fog:0x2e150a, ground:0x4d2a14, fal:0x7a4a24, akc:0xff9040},
+ belepok:[
+  `II. Šāpūr udvara. A mobadok ezer éve fejben hordják a szent hangot — most ábécét találnak fel neki: betűt minden hangárnyalatra, hogy a kiejtés se vesszen el.`,
+  `Huszonegy nask, az Ahuna Vairya ima huszonegy szavára rendezve. Körben könyvvallások nőnek — keresztények, buddhisták, manicheusok. A birodalomnak is könyv kell. De a könyv nem ugyanaz, mint a hang.`
+ ],
+ szilankok:[
+  `Hoffmann a lejegyzést a 4. századra, Šāpūr korára teszi; Hintze szerint az írásba foglalás az 5–6. századig váratott magára. Minden fennmaradt kézirat egyetlen 9–10. századi ősre megy vissza.`,
+  `Duchesne-Guillemin becslése: a pahlavi kommentár avesztai idézeteinek csak negyede található meg a ma ismert Avesztában — a naskok háromnegyede elveszett.`,
+  `Egyetlen nask maradt lényegében ép: a Vendidad — mert az éjszakai liturgiában használatban maradt. Nem az élte túl, amit leírtak. Az, amit mondtak.`
+ ],
+ dontes:{
+  k:`A főmobad a tűz fölött kérdez: „Idegen, aki időn kívülről jössz — leírjuk-e a hangot?”`,
+  o:[
+   {c:`„Írjátok le. A betű a hang bárkája.”`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`Leírták — és a könyv háromnegyede mégis elveszett. Az írás nem véd az elhanyagolás ellen: a bárka is elsüllyed, ha nem ül benne senki.`},
+   {c:`„Ne írjátok. A hang a szertartásban él — a memória a test kánonja.”`, tag:{g:1,z:-1,p:-1,mech:'elhanyagolas'},
+    kov:`Félig igazad lett volna: ami liturgiában maradt, az élte túl. De az arab hódítás utáni szétszóródásban a fejek is elvesztek — a használat véd, amíg van, aki használ.`},
+   {c:`„Írjátok le — de az értelmezéssel, a zanddal együtt.”`, tag:{g:0,z:-1,p:0,mech:'archivum'},
+    kov:`A zand idézetei nélkül ma azt sem tudnánk, mennyi veszett el. Az archívum néha csak a hiány térképe — de a hiány térképe is tudás.`}
+  ]},
+ kodex:`KÁNON: a szászánida 21 nask (3×7 osztály: Gāhānīg, Hada-mānsrīg, Dādīg) — az Ahuna Vairya 21 szavának mintájára. KIMARADT/ELVESZETT: a naskok mintegy háromnegyede (Duchesne-Guillemin becslése a zand-idézetek arányából); lényegében csak a liturgikus használatban maradt Vendidad ép. KI DÖNTÖTT: a szászánida papság és állam — a rögzítés kb. a 4. században (Hoffmann: II. Šāpūr kora), erre a célra feltalált fonetikus ábécével; Ādurbād ī Mahraspandān papi tekintélye; minden kézirat egyetlen 9–10. századi ősre megy vissza. OKOK: a mazdai ortodoxia rögzítése; verseny a „könyvvallásokkal”; majd az arab hódítás utáni szétszóródás mint elhanyagolás-általi veszteség. VITA MA: orális kompozíció vagy rögzített szóbeli átadás (Skjærvø/Kellens kontra Kreyenbroek); a lejegyzés pontos kora.`
+},
+{
+ id:'mani1562', cim:'A tűz', hely:'Maní, Yucatán', ido:'1562. július 12.', arch:'maglya', hang:73.4,
+ pal:{sky:0x120607, fog:0x260d0a, ground:0x3a1a12, fal:0x5a2a1a, akc:0xff5a30},
+ belepok:[
+  `Ez a nap megtörtént, és nem írhatod át. Diego de Landa máglyát rakat: hieroglif kódexek és kultuszképek égnek — a papi tudás, a csillagászat, a naptár, a dinasztiák emlékezete.`,
+  `Landa később maga vallja meg: huszonhét kódexet és ötezernyi képet égettek el, mert — így írja — nem láttak bennük mást, mint babonát és az ördög hazugságait. Itt nem egy közösség válogat a saját tudásából. Itt egy idegen hatalom válogat helyette: tűzzel.`
+ ],
+ szilankok:[
+  `Négy prekolumbián kódex maradt az egész civilizációból: a drezdai, a madridi, a párizsi — és a vitatott Grolier. A minta nem szelekciót tükröz, hanem pusztítást.`,
+  `A Popol Vuh azért él, mert a K'iche' délvidékre Landa keze nem ért el — joghatósági rés mentette meg, nem döntés. Az utolsó kódexek Tayasalban égtek el, 1697-ben.`,
+  `Az írástudó réteg felszámolásával a glifák tudása kihalt. A „mit hagytak ki a maják” kérdés ezért rosszul feltett — itt a kirekesztő nem a közösség volt. A rejtett kódexkészletekről szóló legendák megalapozatlanok.`
+ ],
+ dontes:{
+  k:`A füstben egy fiatal írnok három köteget nyom a kezedbe — egyet elrejthetsz a köpenyed alatt. „Válassz. A többit viszi a tűz.”`,
+  o:[
+   {c:`A csillagászati táblákat — az ég tudását.`, tag:{g:0,z:-1,p:-1,mech:'archivum'},
+    kov:`Bármit mentesz, a kép torz marad: a túlélő négy kódex főleg épp naptár és csillagászat. A minta nem a maja tudás térképe — a tűz térképe. A survivorship bias itt nem hiba: maga a minta.`},
+   {c:`A szertartások könyvét — a kapcsolat tudását.`, tag:{g:1,z:-1,p:-1,mech:'archivum'},
+    kov:`A rítus a legritkább túlélő: amit az inkvizíció bálványimádásnak látott, azt kereste a legkonokabbul. Mentésed a kivétel lett volna — és a kivétel is torzít.`},
+   {c:`A dinasztiák krónikáját — a nevek tudását.`, tag:{g:-1,z:-1,p:1,mech:'archivum'},
+    kov:`A nevek a kőben részben túléltek — a sztéléket nem lehetett máglyára vetni. A papír halandóbb a kőnél; a hordozó is szelektál.`}
+  ]},
+ kodex:`FENNMARADT: négy prekolumbián kódex (Dresden, Madrid, Paris + a vitatott Grolier); gyarmati kori latin betűs átiratok — Popol Vuh (K'iche', ~1554–58), Chilam Balam könyvei (jukaték). MEGSEMMISÜLT: a hieroglif kódexek túlnyomó része — a papi tudásrendszer (csillagászat, matematika, kalendrika, rituálé) és a dinasztikus emlékezet. KI DÖNTÖTT: a spanyol gyarmati egyház — Diego de Landa 1562. július 12-i maníi autodaféja (bevallottan 27 kódex, ~5000 kultuszkép); az utolsó égetések Tayasalban, 1697. OKOK: a kódexek „az ördög babonái” (teológiai); az írástudó elit felszámolása és a térítés (társadalmi); a gyarmati kontroll (politikai). VITA MA: az elégetett kódexek száma (a „fekete legenda” mindkét irányba torzíthat); mennyire őrzi a Popol Vuh és a Chilam Balam a hódítás előtti tudást (Tedlock, Clendinnen). Ez a kanonizáció-pusztítás-által mintapéldája: a „mit zárt ki a közösség” kérdés itt értelmét veszti.`
+},
+{
+ id:'medina', cim:'A hét másolat', hely:'Medina', ido:'i. sz. ~653', arch:'ivek', hang:110,
+ pal:{sky:0x0a0f14, fog:0x131e28, ground:0x24384a, fal:0x3e5a70, akc:0x7fd4e8},
+ belepok:[
+  `A tartományokból rossz hír jön: a seregek másképp recitálnak, és a különbség viszállyá érik. Uthmán kalifa parancsa kész: Zajd ibn Thábit vezetésével egyetlen mushaf készül — a többi lapot tűz várja.`,
+  `A források szerint az ok nem az, hogy a többi kódex megbízhatatlan volna. Az ok az egység: egyetlen szöveg, amely fölött nem lehet összeveszni. A kánon itt államügy — a felejtés pedig rendelet.`
+ ],
+ szilankok:[
+  `Ibn Maszúd és Ubajj kódexei másképp rendeztek, itt-ott másképp olvastak. Ma töredékekből és idézetekből rekonstruálják őket — a tűz alapos volt, de nem tökéletes.`,
+  `A hadísz útja egészen más: ott nem rendelet, hanem tudomány rostál — az isnād, a továbbadói lánc kritikája, Bukhári és Muszlim gyűjteményei a 9. században.`,
+  `Sadeghi, Bergmann és Sinai kutatásai a mássalhangzós váz korai lezárását valószínűsítik; friss elemzés szerint az uthmáni kanonizációt még az ellenséges frakciók forrásai is elismerik.`
+ ],
+ dontes:{
+  k:`Zajd fölnéz a lapokból: „Idegen — és a változatokkal mi legyen?”`,
+  o:[
+   {c:`„Égjenek. Az egység többet ér az árnyalatnál.”`, tag:{g:-1,z:1,p:1,mech:'pusztitas'},
+    kov:`Így történt. A szöveg egysége páratlanul szilárd lett — az ár a változatok emléke. A stabilitás is szelekció: azt választja, hogy ne legyen miből választani.`},
+   {c:`„Pecsételjétek le és őrizzétek — az eltérés is tanúság.”`, tag:{g:0,z:-1,p:0,mech:'archivum'},
+    kov:`Nem ez történt. A változatokat ma régészet és filológia szedegeti össze morzsánként — az archívum, amely nem készült el, a legdrágább archívum.`},
+   {c:`„Minden tartomány olvassa a magáét — a sokféleség nem viszály.”`, tag:{g:1,z:-1,p:-1,mech:'elhanyagolas'},
+    kov:`A kalifátus épp ettől félt. Ahol a szöveg az állam gerince, ott a változat politikai kockázat — a kánon itt az egység technológiája volt.`}
+  ]},
+ kodex:`KÁNON: a 114 szúrás uthmáni Korán (~650) — a hadísznál a „hiteles” gyűjtemények (Bukhári, Muszlim, 9. század). KIMARADT: a nem-standard kódexek (Ibn Maszúd, Ubajj) — elégetve, ma töredékekből rekonstruálva; a hadísznál a gyenge/koholt (daʿīf/mawḍūʿ) hagyományok. KI DÖNTÖTT: Uthmán kalifa (ur. 644–656) rendelete, Zajd ibn Thábit bizottsága; a hadísznál az isnād-kritika tudománya. OKOK: a tartományok közti olvasati eltérések okozta viszály megelőzése — a források szerint nem a többi kódex „megbízhatatlansága”, hanem az egységes másolat elterjesztése volt a cél (politikai-társadalmi egység). VITA MA: a mássalhangzós váz lezárásának pontos ideje (Sadeghi–Bergmann, Sinai); az uthmáni kanonizáció historicitása — a legfrissebb elemzések szerint még az ellenséges frakciók is elismerik.`
+},
+{
+ id:'turfan', cim:'A szerző kánonja', hely:'Turfán', ido:'i. sz. ~800', arch:'rom', hang:82.4,
+ pal:{sky:0x0c0a12, fog:0x1a1524, ground:0x352c42, fal:0x554868, akc:0xb8a0ff},
+ belepok:[
+  `Homokba fúlt kolostor. Lapok kavarognak a szélben — hét könyv törmeléke. Mani maga írta őket, saját kezével, hogy a tanítás ne torzuljon úgy, ahogy szerinte minden korábbi prófétáé eltorzult.`,
+  `A történelem legritkább esete: a kánont az alapító zárta le. Tökéletes volt. És mégis por — mert nem az döntött, mi áll benne, hanem az, hogy minden szomszédja el akarta égetni.`
+ ],
+ szilankok:[
+  `Heptateuchosz — és mellette a Šābuhragān meg az Árzhang: egy képeskönyv, kánoni rangon. Mani a látványt is szentírásnak tekintette.`,
+  `Mani befogadta az Óriások könyvét, az Enók-hagyományt — épp azt, amit az ortodoxiák kizártak. Az egyik kánon hulladéka a másik kánon alapköve.`,
+  `Sokáig szinte mindent Augustinus és al-Bīrūnī ellenséges lapjairól tudtunk; a Medinet Madi-i hét kopt kódex és a turfáni töredékek igazították ki a torzképet — és máig csak részben kiadottak.`
+ ],
+ dontes:{
+  k:`A szél egy lapot sodor a lábadhoz. Fél hasáb olvasható. Mit teszel?`,
+  o:[
+   {c:`Lejegyzem, ami kivehető. A töredék is tudás.`, tag:{g:0,z:-1,p:-1,mech:'archivum'},
+    kov:`Ezt teszi a filológia száz éve: fél hasábokból épít vissza egy világvallást. Az archívum itt nem raktár — helyreállító műhely.`},
+   {c:`Hagyom a szélnek. Ami elmúlt, elmúlt.`, tag:{g:0,z:0,p:0,mech:'elhanyagolas'},
+    kov:`A homok kétezer lapot őrzött meg és milliót őrölt fel. A közöny a pusztítás lassított felvétele — csak nem néz oda senki.`},
+   {c:`Az ellenségei könyveiből próbálom visszaépíteni, amit írt.`, tag:{g:-1,z:0,p:1,mech:'dontes'},
+    kov:`A kutatás sokáig kényszerből ezt tette — és a heresziológia szemüvege torzított. Aki csak a vádiratból ismer valakit, a vádat ismeri, nem őt.`}
+  ]},
+ kodex:`KÁNON: Mani saját kezűleg rögzített művei — a Heptateuchosz, mellette a Šābuhragān és az Árzhang (képeskönyv kánoni rangon); a cél épp a torzulás megelőzése volt. MEGSEMMISÜLT: gyakorlatilag az egész manicheus irodalom — keresztény, zoroasztriánus, később iszlám és kínai hatalmak pusztították; ma turfáni és Medinet Madi-i töredékekből (7 kopt kódex, részben kiadatlan) és ellenséges idézetekből (Augustinus, al-Bīrūnī, Ibn al-Nadīm) ismert. KI DÖNTÖTT: a kánonról az alapító — a kirekesztésről külső hatalmak. OKOK: az üldözés minden befogadó kultúrában; Mani egyetemes, fordítható vallást akart — és befogadta az Enók-hagyományt (Óriások könyve), amit az ortodoxiák kizártak. TANULSÁG: ellenpélda a „tartalmi séma” hipotézisre — itt nem a szöveg természete döntött, hanem a külső erőviszony. VITA MA: hét- vagy ötkönyves kánon; a korpusz kiadatlan része.`
+},
+{
+ id:'ming', cim:'A Tao raktára', hely:'Peking, Ming-udvar', ido:'1406–1445', arch:'oszlopcsarnok', hang:196,
+ pal:{sky:0x140708, fog:0x2a0f10, ground:0x451a1c, fal:0x7a2e30, akc:0xffd070},
+ belepok:[
+  `Zhu Di császár parancsa a 43. Égi Mesternek, Zhang Yuchunak: gyűjtsd egybe a Taót. Nem doktrína válogat itt — mecenatúra. Ami a raktárba kerül, azt az állam másoltatja; ami kívül reked, azt senki.`,
+  `Daozang: a Tao raktára. Mintegy másfél ezer szöveg — liturgia, alkímia, rítus, filozófia egymás mellett. A korábbi kánonok — Tang, Song, dzsürcsi, mongol — mind elvesztek a történelem viharaiban. Ez a polc az utolsó.`
+ ],
+ szilankok:[
+  `A fennmaradt Zhengtong daozang 1445-ben készült el, kiegészítése 1607-ben. A számok forrásfüggők: 1473, 1487 vagy „mintegy 1500” cím — már a leltár is értelmezés.`,
+  `A középkori osztályozás logikája elveszett — ezért tűnik a Ming-kánon elrendezése esetlegesnek. Egy kánon rendje is meghalhat, miközben a szövegei élnek.`,
+  `Schipper és Verellen alapműve szerint a Daozang nem doktrinális szűrő, hanem egyházi-állami együttműködésben gyűjtött, felhalmozó korpusz: nem ítél — befogad és definiál.`
+ ],
+ dontes:{
+  k:`Az Égi Mester kérdez: „A rivális iskola szövegei is ide kívánkoznak. Mit tegyünk velük, vendég?”`,
+  o:[
+   {c:`„Be a raktárba. A Tao tágas — a kánon legyen gyűjtés, ne ítélet.”`, tag:{g:0,z:-1,p:0,mech:'archivum'},
+    kov:`A Daozang valóban így nőtt: felhalmozva, nem rostálva. De a tágasság kerete az udvar volt — a raktár kulcsa a trónon függött.`},
+   {c:`„Csak ami az udvar rítusait szolgálja. A mecénás válogat.”`, tag:{g:-1,z:1,p:1,mech:'dontes'},
+    kov:`Az állami mecenatúra szelekciós ereje pontosan ez: ami nem kap támogatót, azt nem másolják — és amit nem másolnak, az elvész. A pénz csendes kánonjog.`},
+   {c:`„Külön jegyzékbe, a kánonon kívül — hadd éljenek a maguk útján.”`, tag:{g:0,z:0,p:-1,mech:'elhanyagolas'},
+    kov:`A kánonon kívüli másolat túlélési esélye töredék volt: a korábbi kánonok teljes egészében elvesztek. Kívül maradni itt annyit tett: a következő tűzvészig élni.`}
+  ]},
+ kodex:`KÁNON: a Daozang — a fennmaradt Zhengtong daozang (1445, kiegészítés 1607), mintegy 1500 szöveg (forrásfüggően 1473/1487/~1500 cím). ELVESZETT: az összes korábbi kánon (Tang, Song, dzsürcsi, mongol) — és a középkori osztályozás logikája is, ezért tűnik a Ming-elrendezés esetlegesnek. KI DÖNTÖTT: egyházi-állami együttműködés — a császár rendelte el (1406: Zhu Di parancsa Zhang Yuchu 43. Égi Mesternek), az egyház szerkesztette. OKOK: a liturgikus-rituális örökség megőrzése; a taoizmus önmeghatározása a konfucianizmus és buddhizmus mellett; az állami mecenatúra szelekciós hatása — ami nem kapott támogatást, elveszett. VITA MA: Schipper–Verellen — a Daozang nem doktrinális szűrés, hanem akkumulatív „raktár” (repository); a kánon itt definiálta és szentesítette a taoizmus helyét a kínai civilizációban.`
+}
+];
+
+/* ---------- Kódex: elméleti fülek ---------- */
+const SZEMPONTOK = [
+ {c:`(a) Kozmológia`, p:`Monista, dualista vagy emanációs a világkép? A teremtő azonos-e a legfőbb istenséggel, vagy alárendelt műves (demiurgosz) alkotja az anyagot? Az anyagi világ áldás, közeg vagy börtön? Van-e rejtett, ezoterikus réteg — aiónok, szférák, elnyelt fény?`},
+ {c:`(b) Misztikus tapasztalat`, p:`Leír-e a szöveg közvetlen, élményszerű istentapasztalatot — látomást, egyesülést, mennyei utazást? Az élmény technikához kötött-e (meditáció, mantra, rítus)? Kollektív-liturgikus vagy magányos?`},
+ {c:`(c) Személyes kinyilatkoztatás`, p:`A tekintély forrása közvetített (intézmény, lánc, papság) vagy közvetlen? Ki a címzett: a közösség vagy egy beavatott kör? Van-e „titkos tanítás” motívum?`},
+ {c:`(d) Morál / etika`, p:`Szabálykövető (törvény, tisztaság, ortopraxis) vagy belső átalakulásra épülő? Aszketikus-világelutasító vagy világigenlő? Transzgresszív-e — szándékosan hágja-e át a fennálló kódokat?`},
+ {c:`(e) Hatalomkritika`, p:`Bírálja-e a fennálló vallási-politikai intézményt? Legitimálja vagy delegitimálja a földi hatalmat? Van-e apokaliptikus hatalomdöntési motívum?`},
+ {c:`(f) Emberkép és tudásfelfogás`, p:`Az ember alapállapota: bűnös, tudatlan — vagy isteni szikrát hordozó? Megváltásra vagy felébredésre szorul? A megváltó tudás pistis (hit, elfogadás) vagy gnosis (közvetlen, átalakító megismerés)? A tudás mindenkié (exoterikus) vagy beavatáshoz kötött (ezoterikus)? A kutatási sejtés: ez a réteg a legjobb előrejelzője annak, mi szorul a peremre.`}
+];
+const HIPOTEZISEK = [
+ {c:`(a) Nincs egységes minta`, p:`A döntéshozó intézmények gyökeresen eltérnek: zsinat, kalifa, császár, papi elit, írnokiskola, gyarmati inkvizíció, egyéni alapító. Maga a „kánon” szó is nyugati eredetű — az „egységes minta” részben a kategória rávetítésének műterméke lehet. Cáfolat: ha az (f) szempont mégis következetesen elválasztja a kánonit és a kirekesztettet kultúrákon át.`},
+ {c:`(b) Régiónként eltérő minták`, p:`Jelenleg a legjobban alátámasztott állás: a kanonizáció szinte mindig a hatalmi megszilárdulás pillanatához kötődik — a Templom utáni rabbinizmus, az athanaszioszi egyház, a szászánida állam, az uthmáni kalifátus, a Ming-udvar, a gyarmati Spanyolország. A szelekció döntéseket és hatalmi harcot feltételez — de a mechanizmus régióról régióra más. Cáfolat: ha egy kánon bizonyíthatóan hatalmi vákuumban, decentralizáltan záródott le.`},
+ {c:`(c) Mély, közös emberi séma`, p:`A sejtés: rendre az szorul peremre, ami közvetítő nélküli kinyilatkoztatást (gnosis), ezoterikus-dualista kozmológiát vagy intézményi hatalomkritikát hordoz. Mellette: a gnosztikus, enókiánus, tantrikus és kínai apokrif esetek konvergálnak. Ellene: a túlélési torzítás; a manicheus ellenpélda (nem a tartalom, a külső erő döntött); a Tantra nem tűnt el, csak rangot vesztett. Megerősítés feltétele: az (f)+(a)+(e) szempontok együtt jelezzék előre a kirekesztést — a torzításokra kontrollálva. Ha a kontroll után eltűnik az összefüggés, a (c) a (b)-re esik vissza.`}
+];
+const BUKTATOK = [
+ {c:`Túlélési torzítás`, p:`A kirekesztett szövegek zöme eleve nem maradt fenn; amit ismerünk, véletlen leletek (Nag Hammadi, Turfán, Qumrán) vagy ellenséges idézetek szűrték. A hiányból érvelni (argumentum a silentio) a leggyakoribb csapda.`},
+ {c:`A „kánon” kategória-probléma`, p:`A fogalom keresztény-nyugati eredetű; a hinduizmusra és Mezopotámiára vetítve anakronizmus. Megoldás: a kánont ne tárgyként, hanem folyamatként kezelni — korlátozás plusz értelmező kiterjesztés.`},
+ {c:`A gyarmati pusztítás torzítása`, p:`A maja anyag nem belső szelekciót tükröz, hanem külső megsemmisítést. A „mit hagytak ki” kérdés itt rosszul feltett — a helyes kérdés: mit pusztított el a hódító.`},
+ {c:`A mechanizmusok összemosása`, p:`Döntés (zsinat, katalógus) ≠ elhanyagolás (a másolás elmaradása) ≠ pusztítás (fizikai megsemmisítés). Ha ezeket egybemossuk, hamis „egységes minta” áll elő.`},
+ {c:`Konfesszionális kontra kritikai forrás`, p:`Az apologetikai irodalom (pl. „a könyvek önmagukat zárták ki”; a „jamniai zsinat” tényként kezelése) elkülönítendő a kutatási konszenzustól.`},
+ {c:`Számítógépes túlbizakodás`, p:`A stilometria rövid, egyenetlen történeti korpuszokon instabil; a topic modeling és a szóstatisztika hipotézist ad, nem bizonyítékot. Minden gépi eredményt filológiai kontextus hitelesít.`}
+];
+const MECHANIZMUSOK = [
+ {c:`Kirekesztés döntés által`, p:`Explicit zsinati, hatósági vagy katalógusbeli elutasítás — a 39. levél, a weijing-rovat, az uthmáni rendelet. Hangos, dokumentált, vitatható.`},
+ {c:`Kirekesztés elhanyagolás által`, p:`A szöveg kikopik a tananyagból, a liturgiából, a másolók kezéből — Nippur curriculuma, az elveszett naskok. Hangtalan, jegyzőkönyv nélküli; a leghatékonyabb felejtés.`},
+ {c:`Kirekesztés pusztítás által`, p:`A hordozó fizikai megsemmisítése — a maníi máglya, a manicheus könyvégetések, a nem-standard kódexek tüze. Utána a kérdés sem tehető fel többé.`}
+];
+
+/* ============================================================
+   MOTOR — állapot, DOM, Three.js mag, Archívum
+   ============================================================ */
+const N=ALLOMASOK.length, PI2=Math.PI*2, STEP=PI2/N;
+const S={mode:'title',done:new Set(),picks:[],ax:{g:0,z:0,p:0},
+ mech:{dontes:0,elhanyagolas:0,pusztitas:0,archivum:0},
+ fragments:{},prologPick:0,currentIdx:-1,hubAngle:0,hubTarget:0,yaw:0,yawT:0,
+ beat:0,phase:'beat',busy:false,hintShown:false};
+ALLOMASOK.forEach(function(a){S.fragments[a.id]=new Set();});
+
+const $=function(id){return document.getElementById(id);};
+const el={hud:$('hud'),prog:$('prog'),label:$('label'),labelName:$('labelName'),labelSub:$('labelSub'),
+ btnEnter:$('btnEnter'),card:$('card'),cardKick:$('cardKick'),cardTxt:$('cardTxt'),cardBtns:$('cardBtns'),
+ toast:$('toast'),fade:$('fade'),title:$('title'),titleInner:$('titleInner'),
+ codex:$('codex'),codexTabs:$('codexTabs'),codexBody:$('codexBody'),
+ mirrorUI:$('mirrorUI'),mirrorBody:$('mirrorBody'),
+ btnCodex:$('btnCodex'),btnCodexClose:$('btnCodexClose'),btnAudio:$('btnAudio'),btnMirrorClose:$('btnMirrorClose')};
+
+let toastT=null;
+function toast(msg,ms){el.toast.textContent=msg;el.toast.style.opacity=1;
+ clearTimeout(toastT);toastT=setTimeout(function(){el.toast.style.opacity=0;},ms||4200);}
+function vib(n){if(navigator.vibrate){try{navigator.vibrate(n);}catch(e){}}}
+function fadeTo(fn){el.fade.style.opacity=1;
+ setTimeout(function(){fn();setTimeout(function(){el.fade.style.opacity=0;},90);},700);}
+function cur(){return ALLOMASOK[S.currentIdx];}
+
+/* ---------- Hibavédelem és motor-ellenőrzés ---------- */
+function bootFail(msg){el.fade.style.opacity=0;el.title.classList.remove('hidden');
+ el.titleInner.dataset.err='1';
+ el.titleInner.innerHTML='<div class="eyebrow">A Könyvtár nem tud kinyílni</div>'
+  +'<p class="sub">'+msg+'</p>'
+  +'<button class="btn center" style="max-width:320px" onclick="location.reload()">Újrapróbálom</button>';}
+window.addEventListener('error',function(ev){
+ if(el.titleInner.dataset.err)return;
+ bootFail('Váratlan hiba: '+((ev&&ev.message)?ev.message:'ismeretlen')+'.');});
+if(typeof THREE==='undefined'){
+ bootFail('A 3D-motor (Three.js) nem töltődött be a cdnjs.cloudflare.com címről. Az első megnyitáshoz internetkapcsolat kell — kapcsolódj a hálózatra, és frissítsd az oldalt.');
+ throw new Error('THREE hianyzik');}
+
+/* ---------- Three.js mag ---------- */
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true});}
+catch(e){bootFail('A böngésző nem tudott WebGL-vásznat nyitni. Próbáld meg Chrome-ban vagy más böngészőben megnyitni a fájlt.');throw e;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding=THREE.sRGBEncoding;
+document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,500);
+const amb=new THREE.AmbientLight(0x3c4050,.9);scene.add(amb);
+const dir=new THREE.DirectionalLight(0xfff0d8,.5);dir.position.set(5,10,4);scene.add(dir);
+const pt=new THREE.PointLight(0xe6c87e,1,60);pt.position.set(0,5,0);scene.add(pt);
+
+function mat(c){return new THREE.MeshStandardMaterial({color:c,roughness:.92,metalness:.04});}
+function glowMat(c,i){return new THREE.MeshStandardMaterial({color:c,emissive:c,
+ emissiveIntensity:(i==null?1:i),roughness:.4});}
+function textSprite(txt){
+ const c=document.createElement('canvas');c.width=512;c.height=160;
+ const x=c.getContext('2d');x.font='400 52px Georgia, serif';x.textAlign='center';
+ x.shadowColor='rgba(0,0,0,.95)';x.shadowBlur=16;x.fillStyle='#efe4c6';
+ x.fillText(txt,256,96);
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),
+  transparent:true,depthWrite:false}));
+ sp.scale.set(4.4,1.37,1);return sp;}
+function makeDust(n,spread,h,color,size,op){
+ const g=new THREE.BufferGeometry(),p=new Float32Array(n*3);
+ for(let i=0;i<n;i++){p[i*3]=(Math.random()-.5)*spread;p[i*3+1]=Math.random()*h;
+  p[i*3+2]=(Math.random()-.5)*spread;}
+ g.setAttribute('position',new THREE.BufferAttribute(p,3));
+ return new THREE.Points(g,new THREE.PointsMaterial({color:color,size:size,
+  transparent:true,opacity:op,depthWrite:false}));}
+function disposeGroup(g){if(!g)return;scene.remove(g);
+ g.traverse(function(o){if(o.geometry)o.geometry.dispose();
+  if(o.material){var ms=Array.isArray(o.material)?o.material:[o.material];
+   ms.forEach(function(m){if(m.map)m.map.dispose();m.dispose();});}});}
+
+/* ---------- Archívum (hub) ---------- */
+let hubG=null,statG=null,mirrorG=null,mirrorMat=null,mirrorHit=null;
+const portals=[],portHits=[],hubAnims=[],sceneAnims=[],dying=[];
+let shardHits=[];
+let camOffR=8.6,camOffY=1.2;const camLook=new THREE.Vector3(0,1.5,0);
+
+function buildHub(){
+ hubG=new THREE.Group();
+ const floor=new THREE.Mesh(new THREE.CircleGeometry(36,56),mat(0x0a0c15));
+ floor.rotation.x=-Math.PI/2;hubG.add(floor);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(6.9,7.06,72),
+  new THREE.MeshBasicMaterial({color:0xe6c87e,transparent:true,opacity:.2,side:THREE.DoubleSide}));
+ ring.rotation.x=-Math.PI/2;ring.position.y=.02;hubG.add(ring);
+ const stars=makeDust(750,160,80,0x9aa8c8,.55,.8);stars.position.y=4;hubG.add(stars);
+ hubAnims.push(function(tt,dt){stars.rotation.y+=dt*.004;});
+ for(let i=0;i<N;i++){
+  const st=ALLOMASOK[i],ang=i*STEP,x=Math.sin(ang)*7.2,z=Math.cos(ang)*7.2;
+  const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ang;
+  const base=new THREE.Mesh(new THREE.BoxGeometry(1.34,.3,.94),mat(0x1a2030));base.position.y=.15;g.add(base);
+  const pil=new THREE.Mesh(new THREE.BoxGeometry(.92,3,.5),mat(0x232a3d));pil.position.y=1.8;g.add(pil);
+  const capM=new THREE.MeshStandardMaterial({color:0x2a3148,roughness:.7,
+   emissive:st.pal.akc,emissiveIntensity:.13});
+  const cap=new THREE.Mesh(new THREE.BoxGeometry(1.14,.2,.7),capM);cap.position.y=3.4;g.add(cap);
+  const lab=textSprite(st.cim);lab.position.y=4.4;g.add(lab);
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.12,10,10),
+   new THREE.MeshBasicMaterial({color:0xe6c87e}));
+  dot.position.y=3.78;dot.visible=false;g.add(dot);
+  const hit=new THREE.Mesh(new THREE.BoxGeometry(2.7,5.6,2.3),
+   new THREE.MeshBasicMaterial({visible:false}));
+  hit.position.y=2.3;hit.userData={type:'portal',idx:i};g.add(hit);
+  portals.push({g:g,capM:capM,dot:dot});portHits.push(hit);hubG.add(g);
+ }
+ mirrorMat=new THREE.MeshStandardMaterial({color:0x10131f,roughness:.35,metalness:.3,
+  emissive:0xe6c87e,emissiveIntensity:.06});
+ const ob=new THREE.Mesh(new THREE.CylinderGeometry(.38,1.04,5.6,4,1),mirrorMat);
+ ob.rotation.y=Math.PI/4;ob.position.y=2.8;hubG.add(ob);
+ const tip=new THREE.Mesh(new THREE.ConeGeometry(.44,.72,4),mirrorMat);
+ tip.rotation.y=Math.PI/4;tip.position.y=5.96;hubG.add(tip);
+ mirrorHit=new THREE.Mesh(new THREE.BoxGeometry(2.5,7.4,2.5),
+  new THREE.MeshBasicMaterial({visible:false}));
+ mirrorHit.position.y=3.6;mirrorHit.userData={type:'mirror'};hubG.add(mirrorHit);
+ hubAnims.push(function(tt){mirrorMat.emissiveIntensity=
+  (S.done.size>=5? .5+Math.sin(tt*1.4)*.22 : .06);});
+ scene.add(hubG);
+}
+function applyHubEnv(){scene.background=new THREE.Color(0x04050a);
+ scene.fog=new THREE.FogExp2(0x070a14,.02);
+ pt.color.setHex(0xe6c87e);pt.intensity=1;pt.position.set(0,5,0);
+ amb.intensity=.9;dir.intensity=.5;}
+function refreshHubMarks(){for(let i=0;i<N;i++)
+ portals[i].dot.visible=S.done.has(ALLOMASOK[i].id);}
+
+/* ---------- Állomás-építők ---------- */
+function addBox(w,h,d,c,x,y,z,ry,rz){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));
+ m.position.set(x,y,z);if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;statG.add(m);return m;}
+function addCyl(rt,rb,h,c,x,z,seg){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||14),mat(c));
+ m.position.set(x,h/2,z);statG.add(m);return m;}
+function bob(m,base,amp,sp,ph){sceneAnims.push(function(tt){
+ m.position.y=base+Math.sin(tt*sp+(ph||0))*amp;m.rotation.y=tt*.5;});}
+function makeFire(n,cx,cz,rad,h,color,size,op){
+ const g=new THREE.BufferGeometry(),p=new Float32Array(n*3),v=new Float32Array(n);
+ for(let i=0;i<n;i++){p[i*3]=cx+(Math.random()-.5)*rad;p[i*3+1]=Math.random()*h;
+  p[i*3+2]=cz+(Math.random()-.5)*rad;v[i]=.6+Math.random()*1.6;}
+ g.setAttribute('position',new THREE.BufferAttribute(p,3));
+ const pts=new THREE.Points(g,new THREE.PointsMaterial({color:color,size:size,
+  transparent:true,opacity:(op==null?.85:op),blending:THREE.AdditiveBlending,depthWrite:false}));
+ statG.add(pts);
+ sceneAnims.push(function(tt,dt){const a=g.attributes.position.array;
+  for(let i=0;i<n;i++){a[i*3+1]+=v[i]*dt;a[i*3]+=Math.sin(tt*3+i)*dt*.12;
+   if(a[i*3+1]>h){a[i*3+1]=0;a[i*3]=cx+(Math.random()-.5)*rad;a[i*3+2]=cz+(Math.random()-.5)*rad;}}
+  g.attributes.position.needsUpdate=true;});
+ return pts;}
+
+const BUILDERS={
+ udvar:function(st){
+  for(let i=0;i<6;i++){const a=i/6*PI2+.3,h=2+Math.random()*1.5;
+   addCyl(.3,.36,h,st.pal.fal,Math.sin(a)*4.6,Math.cos(a)*4.6);}
+  addBox(7,1,.5,st.pal.fal,0,.5,-5.4);addBox(.5,1,6,st.pal.fal,-5.2,.5,-1);
+  const sc=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,1.5,10),glowMat(st.pal.akc,.8));
+  sc.rotation.z=Math.PI/2;sc.position.set(0,1.6,0);statG.add(sc);bob(sc,1.6,.14,1.1);},
+ bazilika:function(st){
+  for(let zi=0;zi<5;zi++){const z=-6.5+zi*2.3;
+   addCyl(.34,.4,6,st.pal.fal,-2.8,z);addCyl(.34,.4,6,st.pal.fal,2.8,z);}
+  addBox(1.2,6.4,10.8,st.pal.fal,-3.6,3.2,-2);addBox(1.2,6.4,10.8,st.pal.fal,3.6,3.2,-2);
+  addBox(8,7,.8,st.pal.fal,0,3.5,-8);
+  addBox(1.7,.9,1,0x3a3226,0,.45,-1.2);
+  const cx=new THREE.Mesh(new THREE.BoxGeometry(.7,.1,.5),glowMat(st.pal.akc,.9));
+  cx.position.set(0,1.35,-1.2);statG.add(cx);bob(cx,1.35,.1,1.3);},
+ sivatag:function(st){
+  const d1=new THREE.Mesh(new THREE.SphereGeometry(7,20,14),mat(st.pal.ground));
+  d1.scale.set(1.6,.22,1.2);d1.position.set(-6,-.4,-8);statG.add(d1);
+  const d2=d1.clone();d2.position.set(7,-.5,-11);d2.scale.set(1.9,.18,1.4);statG.add(d2);
+  addBox(6,7,2,st.pal.fal,4.5,3.2,-7,-.3);
+  const jb=new THREE.Mesh(new THREE.SphereGeometry(.6,14,12),mat(0x7a5a3a));
+  jb.scale.y=.85;jb.position.set(0,.55,-.6);statG.add(jb);
+  addCyl(.22,.26,.4,0x7a5a3a,0,-.6).position.y=1.05;
+  const moon=new THREE.Mesh(new THREE.CircleGeometry(1.5,24),
+   new THREE.MeshBasicMaterial({color:0xd8d2e8,transparent:true,opacity:.8}));
+  moon.position.set(-7,9,-24);statG.add(moon);
+  const g=new THREE.Mesh(new THREE.OctahedronGeometry(.14),glowMat(st.pal.akc,1));
+  g.position.set(0,1.5,-.6);statG.add(g);bob(g,1.5,.12,1.5);},
+ lotusz:function(st){
+  const water=new THREE.Mesh(new THREE.CircleGeometry(14,40),
+   new THREE.MeshStandardMaterial({color:0x14252c,roughness:.25,metalness:.35}));
+  water.rotation.x=-Math.PI/2;water.position.y=.015;statG.add(water);
+  addBox(9,.5,1.6,st.pal.fal,0,.25,4.2);addBox(7.6,.5,1.4,st.pal.fal,0,.75,3);
+  for(let i=0;i<5;i++){const r=1.5-i*.26;
+   const t=new THREE.Mesh(new THREE.TorusGeometry(r,.09,10,26),glowMat(st.pal.akc,.55));
+   t.rotation.x=Math.PI/2;t.position.y=1+i*.72;statG.add(t);
+   (function(tm,i0){sceneAnims.push(function(tt){
+     tm.material.emissiveIntensity=.45+Math.sin(tt*1.2+i0*.9)*.35;
+     tm.rotation.z=tt*(.1+i0*.05);});})(t,i);}},
+ pagoda:function(st){
+  const zz=-2.5;
+  addBox(3.6,1.1,3.6,st.pal.fal,0,.55,zz);
+  var r1=new THREE.Mesh(new THREE.ConeGeometry(2.9,.8,4),mat(0x27342a));r1.rotation.y=Math.PI/4;r1.position.set(0,1.5,zz);statG.add(r1);
+  addBox(2.7,1,2.7,st.pal.fal,0,2.4,zz);
+  var r2=new THREE.Mesh(new THREE.ConeGeometry(2.2,.7,4),mat(0x27342a));r2.rotation.y=Math.PI/4;r2.position.set(0,3.25,zz);statG.add(r2);
+  addBox(1.9,.9,1.9,st.pal.fal,0,4.15,zz);
+  var r3=new THREE.Mesh(new THREE.ConeGeometry(1.6,.9,4),mat(0x27342a));r3.rotation.y=Math.PI/4;r3.position.set(0,5,zz);statG.add(r3);
+  for(let ix=0;ix<6;ix++)for(let iy=0;iy<3;iy++){
+   const s=new THREE.Mesh(new THREE.BoxGeometry(.7,.5,.3),
+    glowMat(st.pal.akc,.16));s.position.set(-2.2+ix*.9,1+iy*.75,-6.4);statG.add(s);}
+  const sc=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,1.2,10),glowMat(st.pal.akc,.9));
+  sc.rotation.z=Math.PI/2;sc.position.set(1.9,1.4,1.4);statG.add(sc);bob(sc,1.4,.12,1.2);},
+ ziggurat:function(st){
+  const zz=-3;const hs=[8,6.2,4.6,3.1];
+  for(let i=0;i<4;i++)addBox(hs[i],1.05,hs[i],st.pal.fal,0,.55+i*1.05,zz);
+  addBox(1.4,.2,5,st.pal.fal,0,1.2,zz+4.4,0,0).rotation.x=-.42;
+  for(let i=0;i<6;i++)addBox(.5,.08,.7,0x8a6c38,(Math.random()-.5)*6,.06,2+Math.random()*2,Math.random());
+  const tab=new THREE.Mesh(new THREE.BoxGeometry(.55,.75,.1),glowMat(st.pal.akc,.85));
+  tab.position.set(0,1.4,1.6);statG.add(tab);bob(tab,1.4,.1,1.4);},
+ tuzoltar:function(st){
+  addCyl(1,1.2,1.2,st.pal.fal,0,-.8);
+  addCyl(1.3,1.05,.3,0x3a2a1a,0,-.8).position.y=1.35;
+  addCyl(.35,.45,4.6,st.pal.fal,-3.6,-2.4);addCyl(.35,.45,4.6,st.pal.fal,3.6,-2.4);
+  makeFire(200,0,-.8,1.1,3.6,0xff9a40,.42);
+  makeFire(80,0,-.8,.5,2.4,0xffe0a0,.3,.9);},
+ maglya:function(st){
+  camOffR=10.2;
+  for(let i=0;i<7;i++){const m=addBox(2.6,.28,.28,0x2a1a10,
+   (Math.random()-.5)*.8,.25+i*.16,-1+(Math.random()-.5)*.8,Math.random()*Math.PI);}
+  for(let i=0;i<4;i++)addBox(.5,.68,.12,0x1a1210,-2.6+i*1.7,.35,1.8,(Math.random()-.5)*.8,.2);
+  makeFire(320,0,-1,2.2,5.4,0xff6a28,.5);
+  makeFire(120,0,-1,1.1,3.4,0xffd090,.34,.9);
+  const ash=makeDust(160,20,10,0x77706a,.3,.5);statG.add(ash);
+  sceneAnims.push(function(tt,dt){ash.position.y-=dt*.5;if(ash.position.y<-4)ash.position.y=4;});},
+ ivek:function(st){
+  for(let i=0;i<4;i++){const a=new THREE.Mesh(new THREE.TorusGeometry(2.3,.17,10,26,Math.PI),
+   mat(st.pal.fal));a.position.set(0,0,-6+i*2.6);statG.add(a);}
+  const ring=new THREE.Mesh(new THREE.RingGeometry(2.6,2.78,48),
+   new THREE.MeshBasicMaterial({color:st.pal.akc,transparent:true,opacity:.3,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2;ring.position.y=.02;statG.add(ring);
+  const b1=new THREE.Mesh(new THREE.BoxGeometry(.72,.05,.5),glowMat(st.pal.akc,.8));
+  b1.rotation.z=.25;b1.position.set(-.32,1.5,1.4);statG.add(b1);
+  const b2=b1.clone();b2.rotation.z=-.25;b2.position.x=.32;statG.add(b2);
+  bob(b1,1.5,.1,1.2);bob(b2,1.5,.1,1.2,.2);},
+ rom:function(st){
+  for(let i=0;i<6;i++){const h=1.2+Math.random()*2.2;
+   const c=addCyl(.3,.36,h,st.pal.fal,(Math.random()-.5)*8,(Math.random()-.5)*6-2);
+   c.rotation.z=(Math.random()-.5)*.3;}
+  for(let i=0;i<5;i++)addBox(.9,.4,.7,st.pal.fal,(Math.random()-.5)*7,.2,(Math.random()-.5)*5,Math.random());
+  const pgeo=new THREE.PlaneGeometry(.4,.56);
+  for(let i=0;i<22;i++){
+   const p=new THREE.Mesh(pgeo,new THREE.MeshBasicMaterial({color:0xd8d2c0,
+    side:THREE.DoubleSide,transparent:true,opacity:.85}));
+   statG.add(p);
+   (function(pm,i0){const r=1.5+Math.random()*4,ph=Math.random()*6,h0=Math.random()*2;
+    sceneAnims.push(function(tt){
+     const a=ph+tt*.22;
+     pm.position.set(Math.sin(a)*r,1.1+h0+Math.sin(tt*.7+ph)*1.2,Math.cos(a)*r-1);
+     pm.rotation.set(tt*.8+ph,tt*.6,ph);
+     if(Math.sin(tt*2.1+ph*3)>.997)pm.position.y+=.5;});})(p,i);}},
+ oszlopcsarnok:function(st){
+  for(let zi=0;zi<4;zi++){const z=-5.5+zi*2.5;
+   addCyl(.5,.55,6,st.pal.fal,-3,z);addCyl(.5,.55,6,st.pal.fal,3,z);
+   addBox(1.3,.3,1.3,0xc9a860,-3,6.1,z);addBox(1.3,.3,1.3,0xc9a860,3,6.1,z);}
+  for(let ix=0;ix<8;ix++)for(let iy=0;iy<4;iy++){
+   const s=new THREE.Mesh(new THREE.BoxGeometry(.6,.42,.25),glowMat(st.pal.akc,.14));
+   s.position.set(-3.2+ix*.92,.9+iy*.68,-7.4);statG.add(s);}
+  for(let i=0;i<2;i++){
+   const L=new THREE.Mesh(new THREE.SphereGeometry(.3,12,10),glowMat(0xffc070,.9));
+   L.position.set(i?2:-2,3.6,-1);statG.add(L);
+   addBox(.05,1.4,.05,0x333,i?2:-2,4.6,-1);
+   (function(lm,i0){sceneAnims.push(function(tt){
+    lm.position.x=(i0?2:-2)+Math.sin(tt*.9+i0)*.18;});})(L,i);}}
+};
+
+const SHARD_POS=[[2.7,1.15,2.4],[-3.2,1.55,-1.1],[1.6,1.05,-3.6]];
+function addShards(st){
+ const found=S.fragments[st.id];
+ for(let k=0;k<3;k++){
+  if(found.has(k))continue;
+  const m=new THREE.Mesh(new THREE.OctahedronGeometry(.2),glowMat(st.pal.akc,1.25));
+  const p=SHARD_POS[k];m.position.set(p[0],p[1],p[2]);
+  m.userData={type:'shard',k:k,ph:Math.random()*6,by:p[1]};
+  statG.add(m);shardHits.push(m);
+  sceneAnims.push(function(tt){if(!m.parent)return;
+   m.rotation.y=tt*1.3+m.userData.ph;
+   m.position.y=m.userData.by+Math.sin(tt*1.7+m.userData.ph)*.12;});}}
+function collectShard(m){
+ const st=cur(),k=m.userData.k;
+ S.fragments[st.id].add(k);vib(14);
+ toast('Emlék-szilánk · '+st.szilankok[k],7000);
+ dying.push(m);const ix=shardHits.indexOf(m);if(ix>=0)shardHits.splice(ix,1);}
+
+function buildStation(st){
+ disposeGroup(statG);sceneAnims.length=0;shardHits=[];
+ statG=new THREE.Group();scene.add(statG);hubG.visible=false;
+ scene.background=new THREE.Color(st.pal.sky);
+ scene.fog=new THREE.FogExp2(st.pal.fog,.045);
+ pt.color.setHex(st.pal.akc);pt.intensity=1.3;pt.position.set(0,3.2,0);
+ amb.intensity=.75;dir.intensity=.45;
+ const gr=new THREE.Mesh(new THREE.CircleGeometry(44,48),mat(st.pal.ground));
+ gr.rotation.x=-Math.PI/2;statG.add(gr);
+ const dust=makeDust(240,28,9,st.pal.akc,.32,.5);statG.add(dust);
+ sceneAnims.push(function(tt,dt){dust.rotation.y+=dt*.02;});
+ camOffR=8.6;camOffY=1.2;camLook.set(0,1.5,0);S.yaw=0;S.yawT=0;
+ BUILDERS[st.arch](st);
+ addShards(st);}
+
+/* ---------- Bemenet ---------- */
+let pDown=null,nearest=0,lastNear=-1;
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+function angDiff(a,b){let d=a-b;d=((d+Math.PI)%PI2+PI2)%PI2-Math.PI;return d;}
+function onDown(e){pDown={x:e.clientX,y:e.clientY,t:performance.now(),moved:false,lx:e.clientX};}
+function onMove(e){if(!pDown)return;
+ const dx=e.clientX-pDown.lx;pDown.lx=e.clientX;
+ if(Math.abs(e.clientX-pDown.x)>10||Math.abs(e.clientY-pDown.y)>10)pDown.moved=true;
+ if(S.mode==='hub')S.hubTarget-=dx*.006;
+ else if(S.mode==='station')S.yawT=Math.max(-.55,Math.min(.55,S.yawT-dx*.004));}
+function onUp(e){if(!pDown)return;
+ const dt=performance.now()-pDown.t,mv=pDown.moved,x=pDown.x,y=pDown.y;pDown=null;
+ if(mv||dt>450)return;tapAt(x,y);}
+function tapAt(x,y){if(S.busy)return;
+ ndc.x=(x/innerWidth)*2-1;ndc.y=-(y/innerHeight)*2+1;ray.setFromCamera(ndc,camera);
+ if(S.mode==='hub'){
+  const hits=ray.intersectObjects(portHits.concat([mirrorHit]));
+  if(hits.length){const u=hits[0].object.userData;
+   if(u.type==='portal')enterStation(u.idx);else tryMirror();}}
+ else if(S.mode==='station'){
+  const hits=ray.intersectObjects(shardHits);
+  if(hits.length)collectShard(hits[0].object);}}
+
+/* ---------- Kártya-folyam ---------- */
+function mkBtn(txt,cls,fn){const b=document.createElement('button');
+ b.className='btn'+(cls?' '+cls:'');b.textContent=txt;
+ b.onclick=function(){vib(8);fn();};return b;}
+function setCard(kick,txt,btns){el.cardKick.textContent=kick;el.cardTxt.textContent=txt;
+ el.cardBtns.innerHTML='';btns.forEach(function(b){el.cardBtns.appendChild(b);});
+ el.card.scrollTop=0;}
+function updateProg(){el.prog.textContent=S.done.size+'/'+N;}
+
+function enterStation(i){if(S.busy||S.mode!=='hub')return;S.busy=true;vib(12);
+ fadeTo(function(){S.mode='station';S.currentIdx=i;S.beat=0;S.phase='beat';
+  buildStation(ALLOMASOK[i]);setTone(ALLOMASOK[i].hang);
+  el.label.classList.add('hidden');el.card.classList.remove('hidden');renderBeat();
+  if(!S.hintShown){S.hintShown=true;
+   setTimeout(function(){toast('A lebegő fényszilánkok megérinthetők — tényeket rejtenek a Kódexnek.');},900);}
+  S.busy=false;});}
+function renderBeat(){const st=cur(),last=S.beat>=st.belepok.length-1;
+ setCard(st.hely+' · '+st.ido,st.belepok[S.beat],
+  [last?mkBtn('A döntés','center',renderChoice)
+       :mkBtn('Tovább','center',function(){S.beat++;renderBeat();})]);}
+function renderChoice(){const st=cur();S.phase='choice';
+ setCard(st.cim,st.dontes.k,
+  st.dontes.o.map(function(o,oi){return mkBtn(o.c,'',function(){pickOption(oi);});}));}
+function pickOption(oi){const st=cur(),o=st.dontes.o[oi];
+ if(!S.done.has(st.id)){S.ax.g+=o.tag.g;S.ax.z+=o.tag.z;S.ax.p+=o.tag.p;
+  S.mech[o.tag.mech]++;S.picks.push({id:st.id,cim:st.cim,mech:o.tag.mech});
+  S.done.add(st.id);}
+ updateProg();vib(18);
+ setCard('Ami történt',o.kov,[mkBtn('Vissza az Archívumba','center',leaveStation)]);
+ if(S.done.size===5)setTimeout(function(){toast('A Tükör felébredt. Az Archívum közepén vár.');},700);
+ else if(S.done.size===N)setTimeout(function(){toast('Mind a tizenegy pillanat a tiéd. A Tükör most teljes képet mutat.');},700);}
+function leaveStation(){if(S.busy)return;S.busy=true;
+ fadeTo(function(){S.mode='hub';disposeGroup(statG);statG=null;
+  sceneAnims.length=0;shardHits=[];
+  hubG.visible=true;applyHubEnv();refreshHubMarks();setTone(65);lastNear=-1;
+  el.card.classList.add('hidden');el.label.classList.remove('hidden');S.busy=false;});}
+
+/* ---------- Kódex ---------- */
+const TABS=[['hagy','Hagyományok'],['szem','Szempontok'],['hip','Hipotézisek'],
+ ['bukt','Buktatók'],['mech','Mechanizmusok']];
+let tabId='hagy';
+function listHTML(arr){return arr.map(function(e){
+ return '<div class="entry"><h3>'+e.c+'</h3><p>'+e.p+'</p></div>';}).join('');}
+function renderCodex(){
+ el.codexTabs.innerHTML='';
+ TABS.forEach(function(t){const b=document.createElement('button');
+  b.className='tab'+(tabId===t[0]?' on':'');b.textContent=t[1];
+  b.onclick=function(){tabId=t[0];renderCodex();};el.codexTabs.appendChild(b);});
+ let h='';
+ if(tabId==='hagy'){
+  h+='<p class="lock" style="padding:6px 0">A bejegyzések a pillanatok megélésével nyílnak; a szilánkok külön sorként kerülnek ide.</p>';
+  ALLOMASOK.forEach(function(st){
+   h+='<div class="entry"><div class="meta">'+st.hely+' · '+st.ido+'</div><h3>'+st.cim+'</h3>';
+   h+=S.done.has(st.id)?'<p>'+st.kodex+'</p>'
+     :'<p class="lock">Még nem voltál tanúja ennek a pillanatnak.</p>';
+   S.fragments[st.id].forEach(function(k){h+='<div class="frag">'+st.szilankok[k]+'</div>';});
+   h+='</div>';});}
+ else if(tabId==='szem')h=listHTML(SZEMPONTOK);
+ else if(tabId==='hip')h=listHTML(HIPOTEZISEK);
+ else if(tabId==='bukt')h=listHTML(BUKTATOK);
+ else h=listHTML(MECHANIZMUSOK);
+ el.codexBody.innerHTML=h;}
+function openCodex(){renderCodex();el.codex.classList.remove('hidden');el.codex.scrollTop=0;}
+
+/* ---------- A Tükör ---------- */
+const MCOL={dontes:0xe6c87e,archivum:0x7fd4a0,elhanyagolas:0x9aa0b0,pusztitas:0xff5a30};
+const MNAME={dontes:'döntés',archivum:'archívum (félretétel)',
+ elhanyagolas:'elhanyagolás',pusztitas:'pusztítás'};
+function tryMirror(){if(S.done.size<5){
+  toast('A Tükör még alszik. Legalább öt pillanat tanúja légy — most: '+S.done.size+'/5.');return;}
+ openMirror();}
+function buildMirror(){
+ disposeGroup(mirrorG);sceneAnims.length=0;
+ mirrorG=new THREE.Group();scene.add(mirrorG);hubG.visible=false;
+ scene.background=new THREE.Color(0x020308);scene.fog=null;
+ const st2=makeDust(900,130,90,0x8fa0c8,.5,.85);st2.position.y=-14;mirrorG.add(st2);
+ sceneAnims.push(function(tt,dt){st2.rotation.y+=dt*.006;});
+ const pts=[];
+ S.picks.forEach(function(p,i){
+  const a=i*2.39996,r=1.6+i*.55;
+  const v=new THREE.Vector3(Math.sin(a)*r,.4+Math.sin(i*1.7)*.5,Math.cos(a)*r);
+  const s=new THREE.Mesh(new THREE.SphereGeometry(.17,12,12),glowMat(MCOL[p.mech],1.4));
+  s.position.copy(v);mirrorG.add(s);pts.push(v);
+  sceneAnims.push(function(tt){s.scale.setScalar(1+Math.sin(tt*1.6+i)*.14);});});
+ if(pts.length>1){const lg=new THREE.BufferGeometry().setFromPoints(pts);
+  mirrorG.add(new THREE.Line(lg,
+   new THREE.LineBasicMaterial({color:0x3c4460,transparent:true,opacity:.85})));}
+ const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.5,0),
+  new THREE.MeshBasicMaterial({color:0xe6c87e,wireframe:true,transparent:true,opacity:.9}));
+ core.position.y=.5;mirrorG.add(core);
+ sceneAnims.push(function(tt,dt){core.rotation.y+=dt*.4;core.rotation.x+=dt*.17;});
+ pt.color.setHex(0xe6c87e);pt.position.set(0,7,0);pt.intensity=.9;amb.intensity=.85;}
+function axisBlock(l1,l2,v){const pos=Math.max(6,Math.min(94,50+v*8));
+ return '<div class="bar"><i style="left:'+pos+'%"></i></div>'
+  +'<div class="axl"><span>'+l1+'</span><span>'+l2+'</span></div>';}
+function axTxt(v,pos,neg,mid){const a=Math.abs(v);
+ if(a<2)return mid;return (a>=5?'Erősen ':'Inkább ')+(v>0?pos:neg);}
+function mirrorHTML(){
+ const ax=S.ax,total=S.picks.length;
+ const mv=Object.keys(S.mech).map(function(k){return [k,S.mech[k]];})
+  .sort(function(a,b){return b[1]-a[1];});
+ const domK=mv[0][0],domN=mv[0][1];
+ const strong=Math.max(Math.abs(ax.g),Math.abs(ax.z),Math.abs(ax.p));
+ let hip;
+ if(strong>=5)hip='c';else if(total>=6&&domN>=Math.ceil(total*.5))hip='b';else hip='a';
+ const MDESC={
+  dontes:'A kapu őre vagy: néven nevezed, mit zársz ki. A te kirekesztésed hangos és vitatható — mint a zsinatoké és a katalógusoké.',
+  archivum:'Nem ítélsz — félreteszel. A jövő olvasójában bízol: a te kánonod mellett mindig áll egy korsó.',
+  elhanyagolas:'Nem tiltasz — csak nem másolsz tovább. A te felejtésed csendes, és éppen ezért a legalaposabb: nincs jegyzőkönyve.',
+  pusztitas:'Ha kizársz, nyomot sem hagysz. A te kánonod mögött hamu van — és a hamu nem fellebbez.'};
+ const HDESC={
+  c:'<b>A (c) hipotézis — benned igazolódott.</b> A döntéseid mögött felismerhető, helyzeteken átívelő séma húzódik: következetesen ugyanarra az oldalra állsz, bármelyik évszázadban ébredsz. Pontosan ilyen mély sémát keres a kutatás a kirekesztett szövegekben — te most magad lettél az anyag.',
+  b:'<b>A (b) hipotézis illik rád.</b> Nincs egyetlen nagy elved — de van visszatérő módszered: a helyzet dönt, a mechanizmus marad. Így válogat a legtöbb történelmi közösség is: régiónként más elv, mégis felismerhető kéz.',
+  a:'<b>Az (a) hipotézis illik rád.</b> A szelekciódban nem mutatkozik egységes minta. Ez nem következetlenség — lehet, hogy a „minta” fogalma volt túl szűk hozzád. A kutatásban is ez a legnehezebben elviselt eredmény: amikor az adat nem hajlandó sémába állni.'};
+ let h='';
+ h+='<div class="entry"><div class="meta">'+total+' / '+N+' pillanat · a Tükör csak a fennmaradtat látja</div>';
+ h+='<p><b>Nyitány.</b> '+PROLOG.o[S.prologPick].t.charAt(0).toUpperCase()+PROLOG.o[S.prologPick].t.slice(1)+'. A Tükör ezt vetette össze mindazzal, amit azóta tettél.</p></div>';
+ h+='<div class="entry"><h3>A tengelyeid</h3>';
+ h+=axisBlock('közvetített (pistis)','közvetlen (gnosis)',ax.g)
+  +'<p>'+axTxt(ax.g,'a közvetlen felé hajlasz: a tudást ott keresed, ahol senki sem közvetíti — ez a gnosis útja.',
+   'a közvetített felé hajlasz: a láncot, az intézményt, a hitelesített átadást választod — ez a pistis útja.',
+   'A közvetlen és a közvetített tudás között egyensúlyozol — a vitát tartod elevennek.')+'</p>';
+ h+=axisBlock('nyitva hagyás','lezárás',ax.z)
+  +'<p>'+axTxt(ax.z,'a lezárás felé: határt húzol, listát zársz — hiszel a forma védelmében.',
+   'a nyitva hagyás felé: a kánont folyamatnak tekinted, nem tárgynak.',
+   'Hol zársz, hol nyitsz — a határt esetről esetre húzod meg.')+'</p>';
+ h+=axisBlock('perem','központ',ax.p)
+  +'<p>'+axTxt(ax.p,'a központ felé állsz: az egység és a rend értékét a perem szabadsága elé sorolod.',
+   'a perem felé állsz: oda figyelsz, ahonnan a rangot elvették.',
+   'Központ és perem között ingázol — egyiknek sem esküdtél fel.')+'</p></div>';
+ h+='<div class="entry"><h3>A mechanizmusaid</h3>';
+ mv.forEach(function(m){h+='<div class="mrow"><span>'+MNAME[m[0]]+'</span><span>'+m[1]+'</span></div>';});
+ h+='<p>'+MDESC[domK]+'</p></div>';
+ h+='<div class="entry"><h3>Melyik hipotézis vagy te?</h3><p>'+HDESC[hip]+'</p>';
+ if(total<N)h+='<p class="lock">A kép részleges: '+(N-total)+' pillanat még a Holtidőben vár — a te mintád is túlélési torzítással olvasandó.</p>';
+ h+='</div>';
+ h+='<div class="entry"><h3>A torzítás</h3><p>Ez a tükör csak azt látja belőled, ami ebben a játékban fennmaradt: tizenegy pillanat, néhány mondat, egy-egy érintés. Rád is érvényes, ami a korpuszokra: a fennmaradt minta sosem a teljes ember.</p></div>';
+ h+='<div class="entry"><h3>A kérdés, amit hazaviszel</h3><p>Ha a közösségek így válogatnak a tudásból — te hogyan válogatsz önmagadból? Mit hagysz ki a saját kánonodból: döntéssel, elhanyagolással vagy pusztítással? És mi hever a korsóban, eltemetve — arra várva, hogy egyszer megtaláld?</p></div>';
+ h+='<button class="btn center" id="mBack">Vissza az Archívumba</button>'
+  +'<button class="btn center" id="mReset" style="border-color:rgba(255,90,48,.4);color:#ffb59e">A Könyvtár elfelejt — újrakezdés</button>';
+ return h;}
+function openMirror(){if(S.busy)return;S.busy=true;vib(16);
+ fadeTo(function(){S.mode='mirror';buildMirror();setTone(49);
+  el.label.classList.add('hidden');el.card.classList.add('hidden');
+  el.mirrorBody.innerHTML=mirrorHTML();
+  document.getElementById('mBack').onclick=closeMirror;
+  document.getElementById('mReset').onclick=function(){location.reload();};
+  el.mirrorUI.classList.remove('hidden');el.mirrorUI.scrollTop=0;S.busy=false;});}
+function closeMirror(){if(S.busy)return;S.busy=true;
+ el.mirrorUI.classList.add('hidden');
+ fadeTo(function(){S.mode='hub';disposeGroup(mirrorG);mirrorG=null;
+  sceneAnims.length=0;hubG.visible=true;applyHubEnv();refreshHubMarks();
+  setTone(65);lastNear=-1;el.label.classList.remove('hidden');S.busy=false;});}
+
+/* ---------- Hang: generatív drón ---------- */
+const AU={ctx:null,on:false,o1:null,o2:null,g:null};
+function setTone(f){if(!AU.ctx)return;const t=AU.ctx.currentTime;
+ AU.o1.frequency.cancelScheduledValues(t);
+ AU.o1.frequency.exponentialRampToValueAtTime(Math.max(30,f),t+1.4);
+ AU.o2.frequency.cancelScheduledValues(t);
+ AU.o2.frequency.exponentialRampToValueAtTime(Math.max(30,f)*1.4983,t+1.4);}
+function audioToggle(){
+ if(!AU.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  AU.ctx=new C();AU.g=AU.ctx.createGain();AU.g.gain.value=0;
+  const fl=AU.ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=760;
+  AU.o1=AU.ctx.createOscillator();AU.o1.type='sine';AU.o1.frequency.value=65;
+  AU.o2=AU.ctx.createOscillator();AU.o2.type='triangle';AU.o2.frequency.value=97;
+  const g2=AU.ctx.createGain();g2.gain.value=.4;
+  const lfo=AU.ctx.createOscillator();lfo.frequency.value=.08;
+  const lg=AU.ctx.createGain();lg.gain.value=.3;
+  lfo.connect(lg);lg.connect(g2.gain);
+  AU.o1.connect(g2);AU.o2.connect(g2);g2.connect(fl);fl.connect(AU.g);
+  AU.g.connect(AU.ctx.destination);
+  AU.o1.start();AU.o2.start();lfo.start();}
+ AU.ctx.resume();AU.on=!AU.on;
+ AU.g.gain.cancelScheduledValues(AU.ctx.currentTime);
+ AU.g.gain.linearRampToValueAtTime(AU.on?.05:0,AU.ctx.currentTime+.8);
+ el.btnAudio.textContent=AU.on?'Hang · be':'Hang · ki';}
+
+/* ---------- Cím és prológus ---------- */
+function showTitle(){
+ el.titleInner.innerHTML=
+  '<div class="eyebrow">Időutazó önismereti kaland</div>'
+ +'<h1>KÁNON <em>//</em> ARCHÍVUM</h1>'
+ +'<div class="eyebrow" style="margin-top:2px">A Holtidő Könyvtára</div>'
+ +'<p class="sub">A pillanatok közti résben állsz, ahol minden eldöntetlen még egyszer eldönthető. Tizenegy kapu — tizenegy pillanat, amikor egy közösség kiválasztotta, mit őriz meg a tudásból, és mit felejt el. Belépsz, tanúskodsz, döntesz. A Könyvtár közben rólad készít jegyzetet: a végén a Tükör megmutatja, hogyan válogatsz te.</p>'
+ +'<button class="btn center" id="btnStart" style="max-width:320px">Belépek</button>';
+ document.getElementById('btnStart').onclick=showProlog;}
+function showProlog(){
+ el.titleInner.innerHTML=
+  '<div class="eyebrow">A Könyvtár kérdez</div>'
+ +'<p class="sub" style="white-space:pre-line">'+PROLOG.k+'</p>'
+ +'<div id="prBox" style="width:min(92vw,460px)"></div>';
+ const box=document.getElementById('prBox');
+ PROLOG.o.forEach(function(o,i){box.appendChild(mkBtn(o.c,'',function(){beginGame(i);}));});}
+function beginGame(i){S.prologPick=i;S.ax.g+=PROLOG.o[i].g;
+ el.title.classList.add('hidden');el.hud.classList.remove('hidden');
+ el.label.classList.remove('hidden');el.fade.style.opacity=0;
+ S.mode='hub';updateProg();vib(10);
+ setTimeout(function(){toast('Húzd az ujjad: körbefordulsz. Érints meg egy kaput — vagy nyomd meg a Belépést.');},700);}
+
+/* ---------- Fő ciklus ---------- */
+let lastT=0;
+function loop(t){requestAnimationFrame(loop);
+ const dt=Math.min((t-lastT)/1000||0,.05);lastT=t;const tt=t/1000;
+ if(S.mode==='hub'||S.mode==='title'){
+  S.hubTarget+=dt*.015;
+  S.hubAngle+=(S.hubTarget-S.hubAngle)*Math.min(1,dt*4);
+  const A=S.hubAngle;
+  camera.position.set(Math.sin(A)*12.8,3.3,Math.cos(A)*12.8);
+  camera.lookAt(0,2.4,0);
+  let best=1e9;
+  for(let i=0;i<N;i++){const d=Math.abs(angDiff(i*STEP,A));if(d<best){best=d;nearest=i;}}
+  for(let i=0;i<N;i++){const tg=(i===nearest)?(.85+Math.sin(tt*2.2)*.2):.13;
+   portals[i].capM.emissiveIntensity+=(tg-portals[i].capM.emissiveIntensity)*Math.min(1,dt*6);}
+  if(S.mode==='hub'&&nearest!==lastNear){lastNear=nearest;
+   const st=ALLOMASOK[nearest];
+   el.labelName.textContent=st.cim;
+   el.labelSub.textContent=st.hely+' · '+st.ido+(S.done.has(st.id)?'  ·  megjárt':'');}
+  hubAnims.forEach(function(f){f(tt,dt);});
+ }else if(S.mode==='station'){
+  S.yaw+=(S.yawT-S.yaw)*Math.min(1,dt*5);
+  const a=S.yaw+Math.sin(tt*.19)*.05;
+  camera.position.set(camLook.x+Math.sin(a)*camOffR,
+   camLook.y+camOffY+Math.sin(tt*.31)*.16,camLook.z+Math.cos(a)*camOffR);
+  camera.lookAt(camLook);
+ }else if(S.mode==='mirror'){
+  const A=tt*.07;
+  camera.position.set(Math.sin(A)*9.8,6.6,Math.cos(A)*9.8);camera.lookAt(0,.6,0);
+ }
+ sceneAnims.forEach(function(f){f(tt,dt);});
+ for(let i=dying.length-1;i>=0;i--){const m=dying[i];
+  m.scale.multiplyScalar(Math.max(0,1-6*dt));
+  if(m.scale.x<.03){if(m.parent)m.parent.remove(m);dying.splice(i,1);}}
+ renderer.render(scene,camera);}
+
+/* ---------- Indítás ---------- */
+addEventListener('resize',function(){camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+addEventListener('contextmenu',function(e){e.preventDefault();});
+renderer.domElement.addEventListener('pointerdown',onDown);
+renderer.domElement.addEventListener('pointermove',onMove);
+renderer.domElement.addEventListener('pointerup',onUp);
+renderer.domElement.addEventListener('pointercancel',function(){pDown=null;});
+el.btnEnter.onclick=function(){enterStation(nearest);};
+el.btnCodex.onclick=openCodex;
+el.btnCodexClose.onclick=function(){el.codex.classList.add('hidden');};
+el.btnAudio.onclick=audioToggle;
+el.btnMirrorClose.onclick=closeMirror;
+
+buildHub();applyHubEnv();refreshHubMarks();showTitle();
+setTimeout(function(){if(!el.titleInner.dataset.err)el.fade.style.opacity=0;},150);
+requestAnimationFrame(loop);
+</script>
+
+
+</body></html>
