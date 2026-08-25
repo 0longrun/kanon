@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#04050a">
-<title>KÁNON // ARCHÍVUM — A Holtidő Könyvtára</title>
+<title>Árnyékkánon — Az elveszett morál kutatása</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#04050a;color:#e9e2d0;
@@ -81,6 +81,7 @@ button{cursor:pointer;font:inherit;color:inherit;min-height:44px}
 #title .eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:#bfae86}
 #title h1{font-family:Georgia,serif;font-weight:400;font-size:33px;letter-spacing:.05em;margin:10px 0 2px;color:#f2e9d2}
 #title h1 em{font-style:normal;color:#e6c87e}
+#title .subtitle{font-family:Georgia,serif;font-size:17px;color:#d8cfb8;margin:2px 0 8px;letter-spacing:.02em}
 #title .meta{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8f8468;margin-top:10px}
 #title .sub{white-space:pre-line;font-family:Georgia,serif;font-size:15px;line-height:1.65;color:#d8cfb8;max-width:34em;margin:14px 0 4px}
 #title .btn{max-width:340px}
@@ -111,7 +112,7 @@ button{cursor:pointer;font:inherit;color:inherit;min-height:44px}
 <body>
 <div id="grain"></div><div id="veil"></div>
 <div id="hud" class="hidden">
- <span id="brand">Kánon // Archívum</span>
+ <span id="brand">Árnyékkánon</span>
  <span id="prog"><b id="pDone">0</b>/11 · <b id="pKey">12</b> kulcs</span>
  <span style="display:flex;gap:6px">
   <button class="pill" id="btnCodex">Kódex</button>
@@ -129,8 +130,9 @@ button{cursor:pointer;font:inherit;color:inherit;min-height:44px}
 </div>
 <div id="toast"></div>
 <div id="title" class="overlay"><div id="titleInner">
- <div class="eyebrow">A Holtidő Könyvtára</div>
- <h1>KÁNON <em>//</em> ARCHÍVUM</h1>
+ <div class="eyebrow">Az elveszett kéziratok archívuma</div>
+ <h1><em>Árnyékkánon</em></h1>
+ <div class="subtitle serif">Az elveszett morál kutatása</div>
  <div class="meta">11 döntés · kb. 12–15 perc · nincs helyes válasz</div>
  <div class="sub serif">Tizenegy történelmi töréspont — tizenegy kapu, ahol egy közösség eldöntötte,
  mit emel közös örökséggé, és mit hagy a peremen.
@@ -156,7 +158,7 @@ A Könyvtár nem oszt pontot, és nem mond ítéletet.
 <script id="game">
 'use strict';
 /* ============================================================
-   KÁNON // ARCHÍVUM v2 — A Holtidő Könyvtára
+   ÁRNYÉKKÁNON v2 — Az elveszett morál kutatása
    Episztemológiai kalandjáték: a figyelem is kánonképzés.
    Egy fájl · Three.js r128 · festett égboltok, anyagtextúrák
    ============================================================ */
@@ -1079,8 +1081,9 @@ function chip(cert){return `<span class="chip c-${cert}">${CERTN[cert]}</span>`;
 function stChips(arr){return arr.map(s=>`<span class="chip c-st">${s}</span>`).join('');}
 /* ---------- Címlap és prológus ---------- */
 function renderTitle(){dom.titleInner.innerHTML=`
- <div class="eyebrow">A Holtidő Könyvtára</div>
- <h1>KÁNON <em>//</em> ARCHÍVUM</h1>
+ <div class="eyebrow">Az elveszett kéziratok archívuma</div>
+ <h1><em>Árnyékkánon</em></h1>
+ <div class="subtitle serif">Az elveszett morál kutatása</div>
  <div class="meta">11 döntés · kb. 12–15 perc · nincs helyes válasz</div>
  <div class="sub serif">Tizenegy történelmi töréspont — tizenegy kapu, ahol egy közösség eldöntötte,
  mit emel közös örökséggé, és mit hagy a peremen.\n\nA Könyvtár nem oszt pontot, és nem mond ítéletet.
