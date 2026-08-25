@@ -82,6 +82,13 @@ button{cursor:pointer;font:inherit;color:inherit;min-height:44px}
 #title h1{font-family:Georgia,serif;font-weight:400;font-size:33px;letter-spacing:.05em;margin:10px 0 2px;color:#f2e9d2}
 #title h1 em{font-style:normal;color:#e6c87e}
 #title .subtitle{font-family:Georgia,serif;font-size:17px;color:#d8cfb8;margin:2px 0 8px;letter-spacing:.02em}
+#title.covered{padding:0;cursor:pointer;background:#04050a url(./img/cover-mobil.jpg) center/cover no-repeat}
+@media (orientation:landscape){#title.covered{background-image:url(./img/cover-desktop.jpg)}}
+#title.covered #titleInner{display:none}
+#coverBtn{display:none;position:absolute;left:50%;bottom:7%;transform:translateX(-50%);
+ width:min(70vw,360px);height:12vh;max-height:110px;background:transparent;border:none;border-radius:20px}
+#title.covered #coverBtn{display:block}
+#coverBtn:focus-visible{outline:2px solid rgba(230,200,126,.75);outline-offset:4px}
 #title .meta{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8f8468;margin-top:10px}
 #title .sub{white-space:pre-line;font-family:Georgia,serif;font-size:15px;line-height:1.65;color:#d8cfb8;max-width:34em;margin:14px 0 4px}
 #title .btn{max-width:340px}
@@ -1080,7 +1087,17 @@ function hideCard(){dom.card.classList.add('hidden');}
 function chip(cert){return `<span class="chip c-${cert}">${CERTN[cert]}</span>`;}
 function stChips(arr){return arr.map(s=>`<span class="chip c-st">${s}</span>`).join('');}
 /* ---------- Címlap és prológus ---------- */
-function renderTitle(){dom.titleInner.innerHTML=`
+function startGame(){startAudio();dom.title.classList.add('hidden');showProlog();}
+function renderTitle(){
+ // A festett borító a címképernyő. Ha a kép nem tölt be, a szöveges címlap marad.
+ const cov=new Image();
+ cov.onload=()=>{dom.title.classList.add('covered');
+  const b=document.createElement('button');b.id='coverBtn';
+  b.setAttribute('aria-label','Kinyitom az első kaput');
+  dom.title.appendChild(b);};
+ cov.src=innerWidth>innerHeight?'./img/cover-desktop.jpg':'./img/cover-mobil.jpg';
+ dom.title.onclick=()=>{if(dom.title.classList.contains('covered'))startGame();};
+ dom.titleInner.innerHTML=`
  <div class="eyebrow">Az elveszett kéziratok archívuma</div>
  <h1><em>Árnyékkánon</em></h1>
  <div class="subtitle serif">Az elveszett morál kutatása</div>
@@ -1093,7 +1110,7 @@ function renderTitle(){dom.titleInner.innerHTML=`
  A figyelmed is döntés.</div>
  <button class="btn center" style="margin-top:18px" id="btnStart">Kinyitom az első kaput</button>
  <div class="meta" style="margin-top:14px;opacity:.7">fejhallgató ajánlott · húzással nézelődsz · érintéssel nyúlsz a dolgokhoz</div>`;
- $('btnStart').onclick=()=>{startAudio();dom.title.classList.add('hidden');showProlog();};}
+ $('btnStart').onclick=startGame;}
 function showProlog(){S.mode='prolog';
  card('A Könyvtár','előtér',PROLOG.k,PROLOG.o.map((o,i)=>({h:o.c,f:()=>{S.prologPick=i;
   hideCard();enterHub(true);}})));}

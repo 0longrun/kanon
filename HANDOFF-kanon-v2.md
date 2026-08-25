@@ -131,8 +131,10 @@ Pozitív érték = a második pólus.
    16 kihagyott eset + opt-out („a hiányt választom" → `gate12=-1`); a választás a Tükörbe kerül.
    Részleges Tükör ≥5 kaputól, XII nélkül.
 7. **Copy-invariánsok:** „tizenegy történelmi töréspont"; „mit emel közös örökséggé — és mit
-   hagy a peremen"; címlap-meta „11 döntés · kb. 12–15 perc · nincs helyes válasz";
-   CTA „Kinyitom az első kaput". Peremrovat státusz-chipjei megkülönböztetnek:
+   hagy a peremen". Címlap 2026-08-26-tól: a festett borító (img/cover-mobil.jpg álló,
+   img/cover-desktop.jpg fekvő) MAGA a címképernyő — cím „Árnyékkánon — Az elveszett
+   morál kutatása"; a HTML-címszöveg csak képhiba-fallback; a teljes borító tapintható,
+   #coverBtn a fókuszálható CTA („Kinyitom az első kaput" a képre festve). Peremrovat státusz-chipjei megkülönböztetnek:
    nem kanonikus ≠ tiltott ≠ elpusztított ≠ elveszett ≠ periférikus ≠ újra felfedezett.
 8. **Vizuális invariánsok:** égboltkupola és sziluettrétegek `material.fog=false` (különben a köd
    elnyeli őket); a Könyvtár (hub) állandó indigó–arany; **Jiankang (V.) szándékosan VILÁGOS**
