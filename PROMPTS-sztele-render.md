@@ -165,3 +165,60 @@ printing block, incense smoke curling through the lantern beams. 8s loop.
 **Tipp videóhoz:** ha a generátor képből indul (image-to-video), előbb rendereld
 a KÉP-promptot, és azt add be a VIDEÓ-prompt mozgás-leírásával — így a stílus
 garantáltan egyezik.
+
+---
+
+# Sztélé-térkép (sprite sheet) — csak a 11 sztélé, green screen
+
+Két állapot kell: ALAP (halvány jel) és IZZÓ (kattintásra). A kettőnek
+pixelre egyeznie kell, ezért NE két külön generálás legyen: előbb az ALAP,
+majd abból image-to-image/edit úton az IZZÓ ("make the emblems glow" —
+alacsony strength, ~0.25–0.35, vagy azonos seed). A rendszer így a két képet
+egymásra rétegezve tudja váltani/áttűntetni.
+
+## PROMPT A — alap állapot
+
+> Game asset sprite sheet: eleven ancient stone steles standing side by side
+> in a single row, evenly spaced with equal gaps, identical size and shape,
+> strict front-facing orthographic view, completely flat uniform chroma-key
+> green background #00FF00, no ground plane, no cast shadows, no perspective,
+> no text, no watermark. Each stele is a tall monolith slab with a gently
+> rounded top, dark blue-grey stone #1c1e2a, proportions 1:2.5 (width:height),
+> subtle weathered painterly texture, matte finish, crisp silhouette edges
+> against the green. Each stele bears ONE engraved emblem centered on its
+> upper third, in dim antique gold #8a7a50, in this exact left-to-right
+> order: (1) Torah scroll with two roller bars, (2) Chi-Rho monogram,
+> (3) sealed clay jar with an X seal, (4) stylized three-petal lotus blossom,
+> (5) a single tapered ink brushstroke, (6) four cuneiform wedge marks,
+> (7) abstract angular Manichaean letterform, (8) rounded-square Maya glyph
+> block with dots, (9) crescent calligraphy arc with a single dot,
+> (10) sun-cross: circle with cross and four rays, (11) taiji swirl with
+> three trigram lines above it. Dark painterly storybook style, muted
+> antique gold accents.
+
+Képarány: a legszélesebb, amit a generátor tud (21:9 vagy 16:9). Utána a
+képet 11 egyenlő oszlopra vágva minden sztélé külön sprite.
+
+## PROMPT B — izzó állapot (az A-ból, edit/img2img)
+
+> Keep the exact same composition, framing, stele shapes and green background.
+> Change only the emblems: make every engraved emblem incandescent, glowing
+> hot gold #ffd070, with a soft radiant bloom halo around each emblem and a
+> faint warm rim-light on the stone edges nearest the emblem. The stone and
+> the green background stay unchanged.
+
+## Ha kapunként saját izzás-szín kell (a játék akcens-színei, balról jobbra)
+
+I `#e0b060` · II `#d9c48a` · III `#c9a0e8` · IV `#ffb347` · V `#2e4a3a` ·
+VI `#f0c060` · VII `#ff9040` · VIII `#ff5a30` · IX `#7fd4e8` · X `#d8c8ff` ·
+XI `#ffd070`
+
+A PROMPT B-be: "each emblem glows in its own hue, left to right: …" + a lista.
+
+## Beépítési jegyzet (magamnak)
+
+A green (#00FF00) kulcsszínt a beépítéskor alfává konvertáljuk
+(`chroma-key → transparent PNG`), a két állapot közti váltás CSS
+opacity-áttűnés vagy canvas-composite. Ha a generátor a zöldet
+visszaveri a kő szélére (green spill), a kivágás után 1-2px erózió +
+despill kell.
