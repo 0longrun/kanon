@@ -1,0 +1,21 @@
+name: deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Csak próba (ne írjon a szerverre)'
+        type: boolean
+        default: false
+      force_deletes:
+        description: 'Engedd át a törlési korlátot'
+        type: boolean
+        default: false
+jobs:
+  deploy:
+    uses: 0longrun/egedi-ci/.github/workflows/deploy.yml@main
+    with:
+      dry_run: ${{ inputs.dry_run || false }}
+      force_deletes: ${{ inputs.force_deletes || false }}
+    secrets: inherit
