@@ -51,6 +51,9 @@ button{cursor:pointer;font:inherit;color:inherit;min-height:44px}
 .wit .role{font-size:9px;letter-spacing:.22em;text-transform:uppercase}
 .wit .who{font-family:Georgia,serif;font-size:15px;color:#f2e9d2}
 .wit .cost{font-size:10px;letter-spacing:.12em;color:#a89c7d}
+.witrow{display:flex;align-items:center;gap:11px}
+.wport{width:40px;height:50px;flex:none;display:block;border-radius:9px;border:1px solid rgba(233,226,208,.22)}
+.wport.big{width:84px;height:105px;margin:0 0 9px;border-radius:12px}
 .r-hatalom{color:#d4a95f}.r-perem{color:#b98fd4}.r-gyakorlo{color:#8fbf9a}.r-tortenesz{color:#8fa8c8}
 .b-hatalom{border-color:rgba(212,169,95,.4)}.b-perem{border-color:rgba(185,143,212,.4)}
 .b-gyakorlo{border-color:rgba(143,191,154,.4)}.b-tortenesz{border-color:rgba(143,168,200,.4)}
@@ -941,6 +944,60 @@ function buildStation(K){freshWorld();const p=K.pal;
  S.look.yaw=0;S.look.pitch=0;}
 /* ---------- A Könyvtár (hub) és a Tükör-tér ---------- */
 const HUBPAL={st:0x05060f,sm:0x121a33,hz:0x2a3050,sl:0x0a0d1c,fog:0x0a0d18,ground:0x11141f,akc:0xe6c87e,sil:0x070912,stars:1};
+/* Kor-jel piktogramok a hub-sztélékre — kapunként egyszer rajzolt 128px canvas (gyorstár), a textúra buildHub-onként készül */
+function gateGlyph(K){const c=gateGlyph._c||(gateGlyph._c={});if(c[K.id])return c[K.id];
+ const cv=cnv(128,128),g=cv.getContext('2d'),P=Math.PI;
+ let col=K.pal.akc;const cr=col>>16&255,cg=col>>8&255,cb=col&255;
+ if(cr*.3+cg*.6+cb*.1<110){const f=v=>Math.round(v+(255-v)*.55);col=(f(cr)<<16)|(f(cg)<<8)|f(cb);} // sötét akcens (pl. Jiankang tus-zöld) világosítva, hogy a sötét sztélén is látsszon
+ g.strokeStyle=g.fillStyle='#'+col.toString(16).padStart(6,'0');g.lineWidth=4;g.lineCap='round';g.lineJoin='round';
+ const L=(a,b,x,y)=>{g.beginPath();g.moveTo(a,b);g.lineTo(x,y);g.stroke();};
+ const A=(x,y,r,a0,a1,cc)=>{g.beginPath();g.arc(x,y,r,a0,a1,!!cc);g.stroke();};
+ const D=(x,y,r)=>{g.beginPath();g.arc(x,y,r,0,6.3);g.fill();};
+ switch(K.id){
+  case 'javne':/* tóratekercs: két rúd, köztük sorok */
+   L(46,32,46,96);L(82,32,82,96);D(46,28,4);D(46,100,4);D(82,28,4);D(82,100,4);
+   g.lineWidth=3;L(56,50,72,50);L(56,64,72,64);L(56,78,72,78);break;
+  case 'alex':/* chi-ró */
+   L(64,26,64,102);A(64,42,13,-P/2,P/2);L(44,58,84,98);L(84,58,44,98);break;
+  case 'nagh':/* lepecsételt korsó */
+   L(50,34,78,34);L(54,34,54,44);L(74,34,74,44);
+   g.beginPath();g.moveTo(54,44);g.bezierCurveTo(34,54,34,88,54,98);g.lineTo(74,98);
+   g.bezierCurveTo(94,88,94,54,74,44);g.stroke();
+   g.lineWidth=3;L(50,39,78,39);L(58,64,70,76);L(70,64,58,76);break;
+  case 'varanasi':/* stilizált lótusz */
+   g.beginPath();g.moveTo(64,34);g.quadraticCurveTo(80,60,64,88);g.quadraticCurveTo(48,60,64,34);g.stroke();
+   g.beginPath();g.moveTo(58,84);g.quadraticCurveTo(34,78,30,52);g.quadraticCurveTo(48,62,58,80);g.stroke();
+   g.beginPath();g.moveTo(70,84);g.quadraticCurveTo(94,78,98,52);g.quadraticCurveTo(80,62,70,80);g.stroke();
+   A(64,90,20,P*.2,P*.8);break;
+  case 'jiankang':/* egyetlen tusvonás */
+   g.beginPath();g.moveTo(36,92);g.bezierCurveTo(42,60,66,44,94,36);
+   g.bezierCurveTo(70,56,54,72,46,94);g.closePath();g.fill();D(99,31,3.5);break;
+  case 'nippur':{/* ékírás-ékek */
+   const W=(x,y,dx,dy,l)=>{const nx=-dy,ny=dx;g.beginPath();g.moveTo(x+nx*6,y+ny*6);
+    g.lineTo(x-nx*6,y-ny*6);g.lineTo(x+dx*13,y+dy*13);g.closePath();g.fill();
+    if(l)L(x+dx*11,y+dy*11,x+dx*l,y+dy*l);};
+   g.lineWidth=3;W(30,46,1,0,62);W(30,68,1,0,62);W(38,90,1,0,46);W(96,36,0,1,52);break;}
+  case 'ktesziphon':/* stilizált manicheus betűvonal */
+   g.beginPath();g.moveTo(80,28);g.quadraticCurveTo(54,32,54,58);g.quadraticCurveTo(54,80,74,84);
+   g.quadraticCurveTo(92,88,88,100);g.stroke();
+   g.lineWidth=3;L(72,52,92,46);D(42,38,4);break;
+  case 'mani1562':{/* maja glifablokk: keret, belső jel, pontok, sáv */
+   const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.lineTo(x+w-r,y);g.quadraticCurveTo(x+w,y,x+w,y+r);
+    g.lineTo(x+w,y+h-r);g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);g.lineTo(x+r,y+h);
+    g.quadraticCurveTo(x,y+h,x,y+h-r);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.closePath();g.stroke();};
+   rr(42,30,56,58,14);D(72,50,5);A(70,60,13,0,P);
+   D(28,42,4);D(28,58,4);D(28,74,4);g.lineWidth=4;L(46,100,94,100);break;}
+  case 'medina':/* félhold-kalligráfia ív */
+   A(66,64,32,P*.35,P*1.65);A(78,64,24,P*.42,P*1.58);D(94,60,4);break;
+  case 'turfan':/* manicheus napkereszt */
+   A(64,64,26,0,6.3);L(64,38,64,90);L(38,64,90,64);
+   g.lineWidth=3;L(84,44,95,33);L(44,44,33,33);L(44,84,33,95);L(84,84,95,95);break;
+  case 'ming':/* trigram + taidzsi-ív absztrakció */
+   g.lineWidth=3;L(46,22,82,22);L(46,31,60,31);L(68,31,82,31);L(46,40,82,40);
+   g.lineWidth=4;A(64,76,24,0,6.3);
+   g.beginPath();g.arc(64,64,12,-P/2,P/2);g.arc(64,88,12,-P/2,P/2,true);g.stroke();break;
+  default:A(64,64,24,0,6.3);}
+ c[K.id]=cv;return cv;}
 function buildHub(){freshWorld();const p=HUBPAL;
  scene.fog=new THREE.FogExp2(p.fog,0.040);
  makeSky(p,worldGroup);
@@ -962,7 +1019,8 @@ function buildHub(){freshWorld();const p=HUBPAL;
    Mtex('ko',S.done[K.id]?0x2e2a20:0x1c1e2a,{roughness:.6,metalness:.3}));
   st.position.set(x,1.45,z);st.lookAt(0,1.45,0);st.userData={type:'kapu',id:K.id};worldGroup.add(st);tappables.push(st);
   const em=new THREE.Mesh(new THREE.PlaneGeometry(.8,.8),new THREE.MeshBasicMaterial({
-   color:S.done[K.id]?K.pal.akc:0x3a4058,transparent:true,opacity:S.done[K.id]?.95:.55}));
+   map:tx(gateGlyph(K)),color:S.done[K.id]?0xffffff:0x9aa2b8,transparent:true,depthWrite:false,
+   opacity:S.done[K.id]?.95:.55}));
   em.position.set(x*.93,1.9,z*.93);em.lookAt(0,1.9,0);worldGroup.add(em);
   if(S.done[K.id])glow(worldGroup,K.pal.akc,1.6,x*.9,1.9,z*.9,.5);
   anims.push(t=>{em.material.opacity=(S.done[K.id]?.8:.45)+Math.sin(t+i)*.12;});});
@@ -1008,11 +1066,12 @@ function fadeTo(fn,ms){dom.fade.style.opacity=1;setTimeout(()=>{fn();
 function toast(t,ms){dom.toast.textContent=t;dom.toast.style.opacity=1;
  clearTimeout(toast._t);toast._t=setTimeout(()=>{dom.toast.style.opacity=0;},ms||3400);}
 function updateHUD(){dom.pDone.textContent=Object.keys(S.done).length;dom.pKey.textContent=S.keys;}
-function card(kick,kick2,txt,btns){dom.cardKick.textContent=kick;dom.cardKick2.textContent=kick2||'';
+function card(kick,kick2,txt,btns,eph){dom.cardKick.textContent=kick;dom.cardKick2.textContent=kick2||'';
+ if(!eph)card._last={kick,kick2,txt,btns}; // szilánk-kártya (eph) nem íródik a memóba
  dom.cardTxt.innerHTML=txt;dom.cardBtns.innerHTML='';
  (btns||[]).forEach(b=>{const el=document.createElement('button');
   el.className='btn'+(b.cls?' '+b.cls:'');el.innerHTML=b.h;
-  if(b.dis)el.disabled=true;else el.onclick=()=>b.f();
+  if(b.dis)el.disabled=true;else el.onclick=()=>{sfxTick();b.f();};
   dom.cardBtns.appendChild(el);});
  dom.card.classList.remove('hidden');dom.card.scrollTop=0;}
 function hideCard(){dom.card.classList.add('hidden');}
@@ -1035,7 +1094,7 @@ function renderTitle(){dom.titleInner.innerHTML=`
 function showProlog(){S.mode='prolog';
  card('A Könyvtár','előtér',PROLOG.k,PROLOG.o.map((o,i)=>({h:o.c,f:()=>{S.prologPick=i;
   hideCard();enterHub(true);}})));}
-function enterHub(first){S.mode='hub';S.cur=null;hideCard();
+function enterHub(first){S.mode='hub';S.cur=null;S.phase=null;hideCard();
  fadeTo(()=>{buildHub();dom.hud.classList.remove('hidden');dom.label.classList.add('hidden');updateHUD();
   if(first)toast('A Könyvtár csarnoka. Tizenegy sztélé — tizenegy kapu. Érintsd meg valamelyiket.');
   else{const d=Object.keys(S.done).length;
@@ -1052,38 +1111,74 @@ $('btnEnter').onclick=()=>{if(pendingGate)enterStation(pendingGate);};
 function enterStation(id){const K=KAPUK.find(k=>k.id===id);if(!K)return;
  S.mode='station';S.cur=id;S.phase='beat';S.bi=0;dom.label.classList.add('hidden');
  if(!S.witHeard[id])S.witHeard[id]=[];
- fadeTo(()=>{buildStation(K);setTone(K.hang);showBeat();});}
+ fadeTo(()=>{buildStation(K);setTone(K.hang);sfxGate();showBeat();});}
 function stationKick(K){return K.szam+'. kapu · '+K.hely;}
-function showBeat(){const K=KAPUK.find(k=>k.id===S.cur);
+function showBeat(){const K=KAPUK.find(k=>k.id===S.cur);S.phase='beat';
  const last=S.bi>=K.helyzet.length-1;
  card(stationKick(K),K.ido,K.helyzet[S.bi],[
   {h:last?(K.oszton?'Az ösztönöm szerint…':'A tanúkhoz lépek'):'Tovább',cls:'center',
    f:()=>{if(!last){S.bi++;showBeat();}else if(K.oszton)showInstinct();else showWitnesses();}}]);}
-function showInstinct(){const K=KAPUK.find(k=>k.id===S.cur);
+function showInstinct(){const K=KAPUK.find(k=>k.id===S.cur);S.phase='oszton';
  card(stationKick(K),'első ösztön',K.oszton.k,
   K.oszton.o.map((o,i)=>({h:o,f:()=>{S.instinct[K.id]={first:i,final:null};
    toast('A Könyvtár feljegyezte az ösztönödet.');showWitnesses();}})));}
-function showWitnesses(){const K=KAPUK.find(k=>k.id===S.cur);
+/* ---------- Tanu-portrek: procedurális mellkepek (szerep-attributum + kor-paletta) ---------- */
+const _wp={};
+function witnessPortrait(K,t){const key=K.id+':'+t.r;if(_wp[key])return _wp[key];
+ const p=K.pal,c=cnv(96,120),g=c.getContext('2d'),W=96,H=120;
+ const ink=hex(p.sil),mid=hex(p.fal),acc=hex(p.akc);
+ const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,hex(p.sm));gr.addColorStop(.55,hex(p.hz));gr.addColorStop(1,hex(p.sl));
+ g.fillStyle=gr;g.fillRect(0,0,W,H);
+ g.globalAlpha=.28;g.strokeStyle=acc;g.lineWidth=1; // art-deco glória-ivek a fej mögé
+ for(let i=0;i<3;i++){g.beginPath();g.arc(48,50,24+i*10,0,2*Math.PI);g.stroke();}
+ g.globalAlpha=1;
+ g.save();g.translate(t.r==='perem'?63:48,0);if(t.r==='perem')g.rotate(.07); // perem: a szel fele tolva, megdöntve
+ const sw=t.r==='hatalom'?36:30; // hatalom: szeles vall, egyenes tartas
+ g.fillStyle=ink;g.beginPath();g.moveTo(-sw,H+6);g.quadraticCurveTo(4-sw,78,-15,68);g.lineTo(15,68);g.quadraticCurveTo(sw-4,78,sw,H+6);g.closePath();g.fill();
+ g.fillRect(-6,56,12,14); // nyak
+ if(t.r==='perem'){ // csuklya/kendö + lehajtott, arnyekba boruló fej
+  g.fillStyle=mid;g.beginPath();g.moveTo(-20,72);g.quadraticCurveTo(-22,30,0,26);g.quadraticCurveTo(22,30,20,72);g.closePath();g.fill();
+  g.fillStyle=ink;g.beginPath();g.ellipse(1,52,11,13,.18,0,2*Math.PI);g.fill();
+ }else{g.fillStyle=ink;g.beginPath();g.ellipse(0,46,13,16,0,0,2*Math.PI);g.fill();} // arctalan fej
+ if(t.r==='hatalom'){ // mitra/korona-absztrakcio + fejpant + mellszalag + medal
+  g.fillStyle=mid;g.beginPath();g.moveTo(-12,34);g.lineTo(-7,12);g.lineTo(0,6);g.lineTo(7,12);g.lineTo(12,34);g.closePath();g.fill();
+  g.fillStyle=acc;g.fillRect(-13,32,26,4);g.fillRect(-2,72,4,34);g.beginPath();g.arc(0,80,4,0,2*Math.PI);g.fill();}
+ if(t.r==='gyakorlo'){ // kezben tartott tekercs, rudvegekkel
+  g.save();g.translate(0,88);g.rotate(-.5);g.fillStyle=acc;g.fillRect(-24,-5,48,10);
+  g.fillStyle=mid;g.fillRect(-27,-6,6,12);g.fillRect(21,-6,6,12);g.restore();
+  g.fillStyle=mid;g.beginPath();g.ellipse(6,84,6,5,0,0,2*Math.PI);g.fill();} // kez
+ if(t.r==='tortenesz'){ // modern V-gallér + nyakkendö-ek + szemüveg: a kesöbbi visszatekintö
+  g.fillStyle='#cfc8b8';g.beginPath();g.moveTo(-15,68);g.lineTo(0,84);g.lineTo(15,68);g.closePath();g.fill();
+  g.fillStyle=ink;g.beginPath();g.moveTo(-4,72);g.lineTo(0,82);g.lineTo(4,72);g.closePath();g.fill();
+  g.strokeStyle=acc;g.lineWidth=1.6;
+  g.beginPath();g.arc(-6,47,4.6,0,2*Math.PI);g.stroke();g.beginPath();g.arc(6,47,4.6,0,2*Math.PI);g.stroke();
+  g.beginPath();g.moveTo(-1.6,47);g.lineTo(1.6,47);g.moveTo(-10.6,46);g.lineTo(-13,44);g.moveTo(10.6,46);g.lineTo(13,44);g.stroke();}
+ g.restore();
+ g.strokeStyle=acc;g.globalAlpha=.55;g.lineWidth=2;g.strokeRect(2,2,W-4,H-4); // art-deco kettös keret
+ g.globalAlpha=.3;g.lineWidth=1;g.strokeRect(6,6,W-12,H-12);g.globalAlpha=1;
+ return _wp[key]=c.toDataURL();}
+function showWitnesses(){const K=KAPUK.find(k=>k.id===S.cur);S.phase='tanuk';
  const heard=S.witHeard[K.id];
  const btns=K.tanuk.map((t,i)=>{const h=heard.includes(i);
   const dis=!h&&(S.keys<=0||heard.length>=2);
   return {cls:'b-'+t.r,dis:dis,
-   h:`<span class="wit"><span class="role r-${t.r}">${ROLEN[t.r]}</span><span class="who">${t.nev}</span>`+
-     `<span class="cost">${h?'meghallgatva · újraolvasás':(dis?(S.keys<=0?'nincs több kulcsod':'ennél a kapunál már két hangot meghallgattál'):'1 archívumkulcs')}</span></span>`,
+   h:`<span class="witrow"><img class="wport" src="${witnessPortrait(K,t)}" alt=""><span class="wit"><span class="role r-${t.r}">${ROLEN[t.r]}</span><span class="who">${t.nev}</span>`+
+     `<span class="cost">${h?'meghallgatva · újraolvasás':(dis?(S.keys<=0?'nincs több kulcsod':'ennél a kapunál már két hangot meghallgattál'):'1 archívumkulcs')}</span></span></span>`,
    f:()=>showWitness(i)};});
  btns.push({h:'Döntésre lépek',cls:'center',f:showDecision});
  card(stationKick(K),`tanúk · ${2-Math.min(heard.length,2)} hang nyitható · ${S.keys} kulcs`,
   `Négy hang vár. Kinek a szavát tekinted relevánsnak? A meg nem hallgatott hangok is a döntésed részei.`,btns);}
-function showWitness(i){const K=KAPUK.find(k=>k.id===S.cur);
+function showWitness(i){const K=KAPUK.find(k=>k.id===S.cur);S.phase='tanu';
  const heard=S.witHeard[K.id];const t=K.tanuk[i];
  if(!heard.includes(i)){if(S.keys<=0||heard.length>=2)return;
-  S.keys--;heard.push(i);S.roleCounts[t.r]++;updateHUD();}
+  S.keys--;heard.push(i);S.roleCounts[t.r]++;updateHUD();sfxHarp();}
  card(stationKick(K),ROLEN[t.r],
+  `<img class="wport big" src="${witnessPortrait(K,t)}" alt="">`+
   `<span class="r-${t.r}" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">${t.nev}</span>\n\n„${t.sz}”`,
   [{h:'Vissza a tanúkhoz',cls:'center ghost',f:showWitnesses},
    {h:'Döntésre lépek',cls:'center',f:showDecision}]);}
 /* ---------- Döntés → Ár → Ami történt → A perem ---------- */
-function showDecision(){const K=KAPUK.find(k=>k.id===S.cur);
+function showDecision(){const K=KAPUK.find(k=>k.id===S.cur);S.phase='dontes';
  card(stationKick(K),'a döntés',K.dontes.k,
   K.dontes.o.map((o,i)=>({h:o.c,f:()=>pickOption(i)})));}
 function pickOption(oi){const K=KAPUK.find(k=>k.id===S.cur);const o=K.dontes.o[oi];
@@ -1092,16 +1187,16 @@ function pickOption(oi){const K=KAPUK.find(k=>k.id===S.cur);const o=K.dontes.o[o
   if(S.instinct[K.id])S.instinct[K.id].final=oi;
   if(S.witHeard[K.id].length===0)S.blind=S.blind||[],S.blind.push(K.szam);}
  S.done[K.id]=true;updateHUD();showPrice(K,o,redo);}
-function showPrice(K,o,redo){card(stationKick(K),'az ár',
+function showPrice(K,o,redo){S.phase='ar';card(stationKick(K),'az ár',
  `<div class="price ved"><div class="pl">Ezt védted</div><div class="pv">${o.ved}</div></div>`+
  `<div class="price kock"><div class="pl">Ezt kockáztattad</div><div class="pv">${o.kock}</div></div>`+
  `<div class="jegy">A Könyvtár feljegyezte.</div>`,
  [{h:'Ami történt',cls:'center',f:()=>showOutcome(K,o,redo)}]);}
-function showOutcome(K,o,redo){card(stationKick(K),'ami történt',
+function showOutcome(K,o,redo){S.phase='kov';card(stationKick(K),'ami történt',
  o.kov+`\n\n`+chip(o.cert),
  [{h:'Az Archívum pereme',cls:'ghost center',f:()=>showPerem(K,redo)},
   {h:'Vissza a Könyvtárba',cls:'center',f:()=>leaveStation(redo)}]);}
-function showPerem(K,redo){const body=K.perem.map(p=>
+function showPerem(K,redo){S.phase='perem';const body=K.perem.map(p=>
   `<b>${p.c}</b>  ${stChips(p.st)} ${chip(p.cert)}\n${p.p}`).join('\n\n');
  card(stationKick(K),'az archívum pereme',
   `Ami e kapunál kívül maradt — és ami lett belőle:\n\n`+body,
@@ -1111,12 +1206,21 @@ function leaveStation(redo){hideCard();setTone(0);
  enterHub(false);}
 function collectShard(idx){const K=KAPUK.find(k=>k.id===S.cur);if(!K)return;
  if(!S.shards[K.id])S.shards[K.id]=[];if(S.shards[K.id][idx])return;
- S.shards[K.id][idx]=true;
+ S.shards[K.id][idx]=true;sfxShard();
  const obj=tappables.find(o=>o.userData&&o.userData.type==='szilank'&&o.userData.idx===idx);
  if(obj){tappables=tappables.filter(x=>x!==obj);
-  const t0=S.t;anims.push(t=>{const k=Math.min(1,(t-t0)*2);obj.scale.setScalar(1+k*2);
-   obj.material.opacity=1-k;obj.material.transparent=true;if(k>=1)obj.visible=false;});}
- toast('Tudás-szilánk: '+K.szilankok[idx],5200);}
+  const t0=S.t,y0=obj.position.y; // 1.2 mp: felfelé úszás + zsugorodás + halványulás (ease-out)
+  anims.push(t=>{const k=Math.min(1,(t-t0)/1.2),e=1-Math.pow(1-k,3);
+   obj.position.y=y0+e*.9;obj.scale.setScalar(Math.max(.001,1-e*.9));obj.rotation.y+=.05;
+   obj.material.opacity=1-e;obj.material.transparent=true;if(k>=1)obj.visible=false;});}
+ const n=(S.shards[K.id]||[]).filter(Boolean).length;
+ if(S.phase==='dontes'||S.phase==='oszton'){ // választás-kártyát nem írunk felül — toast, hosszabban
+  toast('Tudás-szilánk a Kódexbe került: '+K.szilankok[idx],8000);return;}
+ const prev=card._last;let txt=K.szilankok[idx]; // az épp nyitott flow-kártyát a gomb visszahozza
+ if(!S.seen.shardHint){S.seen.shardHint=true;
+  txt+=`\n\n<span class="lock">A tudás-szilánkok kutatási lábjegyzetek a helyszínről — a Kódex Hagyományok fülén gyűlnek, ott bármikor visszaolvashatod őket.</span>`;}
+ card('Tudás-szilánk · '+n+'/3',stationKick(K),txt,
+  [{h:'Elteszem a Kódexbe',cls:'center',f:()=>{if(S.mode==='station'&&prev)card(prev.kick,prev.kick2,prev.txt,prev.btns);else hideCard();}}],true);}
 /* ---------- Kódex ---------- */
 const TABS=[['hagyomanyok','Hagyományok'],['szempontok','Szempontok'],['hipotezisek','Hipotézisek'],['buktatok','Buktatók'],['mech','Mechanizmusok']];
 let tabCur='hagyomanyok';
@@ -1132,7 +1236,8 @@ function renderCodex(){dom.codexTabs.innerHTML='';
    if(open){h+=`<p>${K.kodex}</p>`;
     K.szilankok.forEach((s,i)=>{if(S.shards[K.id]&&S.shards[K.id][i])h+=`<div class="frag">◈ ${s}</div>`;});
     if(sh<3)h+=`<p class="lock">${3-sh} tudás-szilánk még a helyszínen rejtőzik.</p>`;}
-   else h+=`<p class="lock">A kapu még nem nyílt meg. A Könyvtár nem előlegez tudást.</p>`;
+   else{h+=`<p class="lock">A kapu még nem nyílt meg. A Könyvtár nem előlegez tudást.</p>`;
+    K.szilankok.forEach((s,i)=>{if(S.shards[K.id]&&S.shards[K.id][i])h+=`<div class="frag">◈ ${s}</div>`;});}
    h+='</div>';});}
  else if(tabCur==='szempontok'){h+=`<p class="serif" style="color:#c9bfa4;font-size:13.5px">Hat szempont, amellyel a kutatás a bekerülő és kimaradó szövegeket hasonlítja össze:</p>`;
   SZEMPONTOK.forEach(s=>{h+=`<div class="entry"><h3>${s.c}</h3><p>${s.p}</p></div>`;});}
@@ -1173,7 +1278,7 @@ function axisData(){const out={};AXES.forEach(([k])=>out[k]={sum:0,ev:[]});
  S.picks.forEach(p=>{for(const k in (p.tag||{})){const v=p.tag[k];
   out[k].sum+=v;out[k].ev.push({szam:p.szam,v:v});}});return out;}
 function enterMirror(){S.mode='mirror';hideCard();dom.label.classList.add('hidden');
- fadeTo(()=>{buildMirrorScene();setTone(220);renderMirror();dom.mirrorUI.classList.remove('hidden');});}
+ fadeTo(()=>{buildMirrorScene();setTone(220);sfxMirror();renderMirror();dom.mirrorUI.classList.remove('hidden');});}
 $('btnMirrorClose').onclick=()=>{dom.mirrorUI.classList.add('hidden');enterHub(false);};
 function renderMirror(){const n=S.picks.length,full=n>=11;
  const mtally={dontes:0,elhanyagolas:0,pusztitas:0,archivum:0};
@@ -1237,21 +1342,49 @@ function renderMirror(){const n=S.picks.length,full=n>=11;
  h+=`<button class="btn center" onclick="location.reload()">Újrajátszás az ellenkező ösztönnel</button></div>`;
  dom.mirrorBody.innerHTML=h;}
 /* ---------- Hang ---------- */
-let AC=null,osc=null,gain=null,osc2=null,gain2=null;
-function startAudio(){if(AC)return;try{
+/* Szőnyeg: 110–220 Hz alap (kis hangszórón is tisztán szól) + kvint, lowpass mögött;
+   lebegés tudatos és lassú (0.12 Hz). Minden gain-váltás rampelt (setTargetAtTime /
+   anchorolt linearRamp) — nincs kattanás. Effektek: rövid, halk, borítékolt osc-ok,
+   mindnek van stop-ja; a szőnyeg 2 osc-ja újrahasznosított (sosem áll le). */
+let AC=null,master=null,sfxBus=null,padLP=null,osc=null,gain=null,osc2=null,gain2=null,muted=false;
+function padBase(f){return f>0?(f<110?f*2:f):110;} // K.hang → szőnyeg-alap a 110–220 sávban
+function startAudio(){if(AC){if(AC.state==='suspended')AC.resume();return;}try{
  AC=new (window.AudioContext||window.webkitAudioContext)();
- gain=AC.createGain();gain.gain.value=0.05;gain.connect(AC.destination);
- osc=AC.createOscillator();osc.type='sine';osc.frequency.value=55;osc.connect(gain);osc.start();
- gain2=AC.createGain();gain2.gain.value=0.018;gain2.connect(AC.destination);
- osc2=AC.createOscillator();osc2.type='triangle';osc2.frequency.value=110.5;osc2.connect(gain2);osc2.start();
+ if(AC.state==='suspended')AC.resume(); // mobil: user-gesztusból hívva feloldható
+ const t=AC.currentTime;
+ master=AC.createGain();master.gain.setValueAtTime(0,t);master.gain.setTargetAtTime(1,t,0.3);master.connect(AC.destination);
+ sfxBus=AC.createGain();sfxBus.gain.value=1;sfxBus.connect(master);
+ padLP=AC.createBiquadFilter();padLP.type='lowpass';padLP.frequency.value=700;padLP.Q.value=0.5;padLP.connect(master);
+ gain=AC.createGain();gain.gain.value=0.05;gain.connect(padLP);
+ osc=AC.createOscillator();osc.type='sine';osc.frequency.value=110;osc.connect(gain);osc.start();
+ gain2=AC.createGain();gain2.gain.value=0.02;gain2.connect(padLP);
+ osc2=AC.createOscillator();osc2.type='triangle';osc2.frequency.value=165.12;osc2.connect(gain2);osc2.start();
  S.audio=true;}catch(e){}}
-function setTone(f){if(!AC)return;const t=AC.currentTime;
- if(f>0){osc.frequency.linearRampToValueAtTime(f*.5,t+2);osc2.frequency.linearRampToValueAtTime(f*.5+.7,t+2);
-  gain.gain.linearRampToValueAtTime(0.05,t+2);gain2.gain.linearRampToValueAtTime(0.018,t+2);}
- else{osc.frequency.linearRampToValueAtTime(55,t+2);osc2.frequency.linearRampToValueAtTime(110.5,t+2);}}
+function rampF(p,v,t){p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+2);} // anchorolt ramp
+function setTone(f){if(!AC)return;const t=AC.currentTime,b=padBase(f);
+ rampF(osc.frequency,b,t);rampF(osc2.frequency,b*1.5+0.12,t);}
+function tone(f,type,vol,dur,at,rel){if(!AC||muted)return;const t=AC.currentTime+(at||0); // borítékolt rövid hang: 8ms attack + exp lecsengés
+ const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.008);g.gain.setTargetAtTime(0,t+0.008,rel);
+ o.connect(g);g.connect(sfxBus);o.start(t);o.stop(t+dur);}
+function sfxShard(){tone(1568,'sine',0.035,0.7,0,0.09);tone(2093,'sine',0.028,0.6,0.03,0.07);tone(2637,'sine',0.02,0.5,0.06,0.06);} // üvegcsengés
+function sfxGate(){if(!AC||muted)return;const t=AC.currentTime; // mély, lágy kapunyílás-swell
+ const o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain();
+ o.type='sine';o.frequency.setValueAtTime(110,t);o.frequency.linearRampToValueAtTime(98,t+2);
+ o2.type='sine';o2.frequency.setValueAtTime(165,t);o2.frequency.linearRampToValueAtTime(147,t+2);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.05,t+0.9);g.gain.setTargetAtTime(0,t+1.1,0.5);
+ o.connect(g);o2.connect(g);g.connect(padLP);o.start(t);o2.start(t);o.stop(t+3.5);o2.stop(t+3.5);}
+function sfxTick(){tone(880,'sine',0.008,0.08,0,0.015);} // alig hallható tik
+function sfxHarp(){tone(440,'sine',0.04,1.4,0,0.28);tone(880,'sine',0.015,1.1,0,0.2);tone(1320,'sine',0.006,0.8,0,0.12);} // hárfa-pengetés
+function sfxMirror(){if(!AC||muted)return;const t=AC.currentTime; // éteri felfelé glissando
+ [0,0.9].forEach((d,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';
+  o.frequency.setValueAtTime(440*(i?1.5:1),t+d);o.frequency.exponentialRampToValueAtTime(1320*(i?1.5:1),t+d+1.6);
+  g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(0.03,t+d+0.4);g.gain.setTargetAtTime(0,t+d+1.2,0.35);
+  o.connect(g);g.connect(sfxBus);o.start(t+d);o.stop(t+d+3);});}
 $('btnAudio').onclick=()=>{if(!AC){startAudio();toast('Hang bekapcsolva.');}
- else{const on=gain.gain.value>0.001;gain.gain.value=on?0:.05;gain2.gain.value=on?0:.018;
-  toast(on?'Hang elnémítva.':'Hang bekapcsolva.');}};
+ else{muted=!muted;if(!muted&&AC.state==='suspended')AC.resume();
+  master.gain.setTargetAtTime(muted?0:1,AC.currentTime,0.05); // rampelt némítás
+  S.audio=!muted;toast(muted?'Hang elnémítva.':'Hang bekapcsolva.');}};
 /* ---------- Fő hurok és indítás ---------- */
 const clock=new THREE.Clock();
 function loop(){requestAnimationFrame(loop);const dt=clock.getDelta();S.t+=dt;
