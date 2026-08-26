@@ -1108,7 +1108,10 @@ addEventListener('pointerdown',e=>{if(e.target.closest('#card,.overlay,#hud,#lab
 addEventListener('pointermove',e=>{if(!S.pointer.down)return;
  const dx=e.clientX-S.pointer.x,dy=e.clientY-S.pointer.y;
  if(Math.abs(dx)+Math.abs(dy)>6)S.pointer.moved=true;
- S.look.yaw-=dx*.0034;S.look.pitch=Math.max(-.6,Math.min(.6,S.look.pitch-dy*.0026));
+ // Vízszintesen panoráma-konvenció: a tér az ujjadat követi (jobbra húzás
+ // jobbra tolja a látványt), mint a Street View-ban. Függőlegesen marad a
+ // korábbi irány.
+ S.look.yaw+=dx*.0034;S.look.pitch=Math.max(-.6,Math.min(.6,S.look.pitch-dy*.0026));
  S.pointer.x=e.clientX;S.pointer.y=e.clientY;});
 addEventListener('pointerup',e=>{if(!S.pointer.down)return;S.pointer.down=false;
  if(S.pointer.moved||e.target.closest('#card,.overlay,#hud,#label'))return;
