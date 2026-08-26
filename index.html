@@ -952,6 +952,32 @@ function buildStation(K){freshWorld();const p=K.pal;
  sp.forEach((s,i)=>{if(!(S.shards[K.id]&&S.shards[K.id][i]))shardMesh(p,s[0],s[1],s[2],i);});
  S.look.yaw=0;S.look.pitch=0;}
 /* ---------- A Könyvtár (hub) és a Tükör-tér ---------- */
+/* — Festett hub-textúrák (ég, talaj, sztélé-atlasz). A kapuk saját,
+   procedurális palettája ÉRINTETLEN: ezek csak a Könyvtár terére valók.
+   A sztélé-atlasz 11 cellája balról jobbra a KAPUK sorrendjét követi;
+   a 'ki' és 'be' lap pixelre fedésben van, ezért a váltás nem ugrik. */
+const TL=new THREE.TextureLoader();
+const ART={};
+(function loadArt(){
+ // A klónok a clone() pillanatában még kép nélküliek lehetnek, és a loader
+ // onLoad-ja csak az EREDETIT frissíti — ezért utánahúzzuk őket.
+ const enc=(url)=>{const t=TL.load(url,tex=>{(tex.__cl||[]).forEach(c=>{
+   c.image=tex.image;c.needsUpdate=true;});});t.encoding=THREE.sRGBEncoding;return t;};
+ ART.sky=enc('./img/sky.webp');
+ ART.sky.wrapS=THREE.RepeatWrapping;ART.sky.repeat.x=3;
+ ART.ground=enc('./img/ground.webp');
+ // Súroló szögben (a padlót majdnem vízszintesen nézzük) a mipmap egyszínű
+ // sávokká esne össze — ezt csak anizotróp szűrés akadályozza meg.
+ ART.ground.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ ART.stOff=enc('./img/steles-off.webp');
+ ART.stOn =enc('./img/steles-on.webp');
+ [ART.stOff,ART.stOn].forEach(t=>{t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;
+  t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;});})();
+/* Egy kapu cellája az atlaszból: a textúrát klónozzuk (közös kép, saját offset). */
+function steleTex(base,i){const t=base.clone();
+ t.repeat.set(1/11,1);t.offset.set(i/11,0);
+ if(base.image)t.needsUpdate=true;else (base.__cl=base.__cl||[]).push(t);
+ return t;}
 const HUBPAL={st:0x05060f,sm:0x121a33,hz:0x2a3050,sl:0x0a0d1c,fog:0x0a0d18,ground:0x11141f,akc:0xe6c87e,sil:0x070912,stars:1};
 /* Kor-jel piktogramok a hub-sztélékre — kapunként egyszer rajzolt 128px canvas (gyorstár), a textúra buildHub-onként készül */
 function gateGlyph(K){const c=gateGlyph._c||(gateGlyph._c={});if(c[K.id])return c[K.id];
@@ -1008,9 +1034,23 @@ function gateGlyph(K){const c=gateGlyph._c||(gateGlyph._c={});if(c[K.id])return 
   default:A(64,64,24,0,6.3);}
  c[K.id]=cv;return cv;}
 function buildHub(){freshWorld();const p=HUBPAL;
- scene.fog=new THREE.FogExp2(p.fog,0.040);
- makeSky(p,worldGroup);
- const g=groundDisc({ground:0x14161f,hz:0x2a3050},'ko',40);g.material.metalness=.35;g.material.roughness=.5;
+ scene.fog=new THREE.FogExp2(p.fog,0.030);
+ // festett csillagköd-kupola a procedurális égbolt helyett
+ const skyM=new THREE.MeshBasicMaterial({map:ART.sky,side:THREE.BackSide});skyM.fog=false;
+ worldGroup.add(new THREE.Mesh(new THREE.SphereGeometry(84,42,26),skyM));
+ // A nagy talajkorong marad procedurális (a festett kép ráfeszítve olvashatatlan
+ // lenne 80 egység átmérőn). A festett kőspirál padló-medalionként ül a közepén,
+ // pont ott, ahol a játékos áll és ahol a sztélék köre fut.
+ // A külső talaj GYŰRŰ, nem korong: így a festett medalionnal nincs egysíkú
+ // átfedés. (Két egysíkú lapnál a medalion — átlátszóként — némán eltűnt.)
+ const g=new THREE.Mesh(new THREE.RingGeometry(12.6,40,64,1),
+  new THREE.MeshStandardMaterial({map:tx(groundCanvas({ground:0x0b0d15,hz:0x141a2e},'ko')),
+   roughness:.6,metalness:.3}));
+ g.rotation.x=-Math.PI/2;worldGroup.add(g);
+ const med=new THREE.Mesh(new THREE.CircleGeometry(13,64),
+  new THREE.MeshStandardMaterial({map:ART.ground,roughness:.92,metalness:.03,
+   emissiveMap:ART.ground,emissive:0xffffff,emissiveIntensity:.55}));
+ med.rotation.x=-Math.PI/2;med.position.y=.02;worldGroup.add(med);
  lightRig({sm:0x26304f,ground:0x0a0c14,hz:0xe6c87e,st:0x0a0d18});
  const ringT=(()=>{const c=cnv(256,256),gg=c.getContext('2d');gg.strokeStyle='rgba(230,200,126,.9)';
   gg.lineWidth=7;gg.beginPath();gg.arc(128,128,110,0,6.3);gg.stroke();return tx(c);})();
@@ -1022,20 +1062,31 @@ function buildHub(){freshWorld();const p=HUBPAL;
  obM.position.set(0,2.3,-0.001);obM.userData={type:'obeliszk'};worldGroup.add(obM);tappables.push(obM);
  glow(worldGroup,0xe6c87e,4.4,0,3.4,0,.30);
  const done=Object.keys(S.done).length;
+ hubSteles=[];
  KAPUK.forEach((K,i)=>{const a=(i/KAPUK.length)*Math.PI*2,r=7.2;
   const x=Math.sin(a)*r,z=-Math.cos(a)*r;
-  const st=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.9,.5),
-   Mtex('ko',S.done[K.id]?0x2e2a20:0x1c1e2a,{roughness:.6,metalness:.3}));
-  st.position.set(x,1.45,z);st.lookAt(0,1.45,0);st.userData={type:'kapu',id:K.id};worldGroup.add(st);tappables.push(st);
-  const em=new THREE.Mesh(new THREE.PlaneGeometry(.8,.8),new THREE.MeshBasicMaterial({
-   map:tx(gateGlyph(K)),color:S.done[K.id]?0xffffff:0x9aa2b8,transparent:true,depthWrite:false,
-   opacity:S.done[K.id]?.95:.55}));
-  em.position.set(x*.93,1.9,z*.93);em.lookAt(0,1.9,0);worldGroup.add(em);
-  if(S.done[K.id])glow(worldGroup,K.pal.akc,1.6,x*.9,1.9,z*.9,.5);
-  anims.push(t=>{em.material.opacity=(S.done[K.id]?.8:.45)+Math.sin(t+i)*.12;});});
+  // ki-lap: mindig látszik. be-lap: fölötte, opacitással úsztatva.
+  const geo=new THREE.PlaneGeometry(1.6,2.75);  // az atlasz cella-aránya (0.58), torzításmentes
+  const mk=t=>new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:.04,side:THREE.DoubleSide});
+  const off=new THREE.Mesh(geo,mk(steleTex(ART.stOff,i)));
+  off.position.set(x,1.375,z);off.lookAt(0,1.375,0);
+  off.userData={type:'kapu',id:K.id};worldGroup.add(off);tappables.push(off);
+  const on=new THREE.Mesh(geo,mk(steleTex(ART.stOn,i)));
+  on.material.depthWrite=false;on.material.opacity=0;
+  on.position.copy(off.position);on.quaternion.copy(off.quaternion);
+  on.translateZ(.012);worldGroup.add(on);
+  const rec={id:K.id,on:on,lit:S.done[K.id]?1:0,hot:0};hubSteles.push(rec);
+  if(S.done[K.id])glow(worldGroup,K.pal.akc,1.5,x*.92,1.7,z*.92,.42);
+  anims.push(t=>{
+   const base=rec.lit?(.82+Math.sin(t*1.1+i)*.12):0;    // bejárt kapu: állandó izzás
+   const target=Math.max(base,rec.hot);                  // érintésre: teljes izzás
+   on.material.opacity+=(target-on.material.opacity)*.12;// lágy áttűnés
+   if(rec.hot>0)rec.hot=Math.max(0,rec.hot-.006);});});
  dust(90,30,.06,0xe6c87e,.4,.0008);
  anims.push(t=>{obM.rotation.y=t*.25;ring.rotation.z=t*.05;});
- S.look.yaw=0;S.look.pitch=0;}
+ // A Könyvtárban enyhén lefelé indul a nézet: a festett kőspirál padló csak
+ // így olvasható (pontosan vízszintesen a kör közepéből nézve összenyomódik).
+ S.look.yaw=0;S.look.pitch=-0.25;}
 function buildMirrorScene(){freshWorld();
  scene.fog=new THREE.FogExp2(0x070512,0.035);
  makeSky({st:0x0a0618,sm:0x1c1233,hz:0x5a3a7a,sl:0x0d0a1c,stars:1},worldGroup);
@@ -1122,7 +1173,9 @@ function enterHub(first){S.mode='hub';S.cur=null;S.phase=null;hideCard();
    else if(d>=5)toast('A középső obeliszk már részleges tükröt tud mutatni — vagy folytasd a kapukat.');}});}
 /* ---------- Kapu-előnézet és belépés ---------- */
 let pendingGate=null;
+let hubSteles=[];
 function previewGate(id){const K=KAPUK.find(k=>k.id===id);if(!K)return;pendingGate=id;
+ hubSteles.forEach(s=>{if(s.id===id)s.hot=1;});
  dom.labelName.textContent=K.szam+'. kapu — '+K.cim;
  dom.labelSub.textContent=K.hely+' · '+K.ido+' · '+K.anyag+(S.done[id]?' · bejárva':'');
  $('btnEnter').textContent=S.done[id]?'Újra belépek':'Kinyitom a kaput';
@@ -1417,7 +1470,7 @@ function boot(){S.mode='title';renderTitle();buildHub();loop();
  setTimeout(()=>{dom.fade.style.opacity=0;},150);}
 boot();
 window.__dbg={S,KAPUK,KAPU12,enterStation,showDecision,pickOption,enterHub,enterMirror,gate12Seq,
- showWitness,showWitnesses,obeliskTap,collectShard,renderMirror,axisData,handleTap};
+ showWitness,showWitnesses,obeliskTap,collectShard,renderMirror,axisData,handleTap,scene,ART,camera,renderer,previewGate,getWorld:()=>worldGroup,getSteles:()=>hubSteles};
 </script>
 
 
